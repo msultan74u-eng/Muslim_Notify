@@ -53,6 +53,26 @@ class S {
   static S? maybeOf(BuildContext context) {
     return Localizations.of<S>(context, S);
   }
+
+  /// `Muslim Notify`
+  String get appTitle {
+    return Intl.message('Muslim Notify', name: 'appTitle', desc: '', args: []);
+  }
+
+  /// `EN`
+  String get change {
+    return Intl.message('EN', name: 'change', desc: '', args: []);
+  }
+
+  /// `Current time is English`
+  String get currentLang {
+    return Intl.message(
+      'Current time is English',
+      name: 'currentLang',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {
