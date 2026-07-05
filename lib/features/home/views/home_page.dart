@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/themes/app_text_styles.dart';
+import '../../../core/themes/theme_cubit/theme_cubit.dart';
 import '../../../generated/l10n.dart';
 import '../../language/logic/lang_cubit/lang_cubit.dart';
 
@@ -16,7 +18,6 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(S.of(context).appTitle),
         centerTitle: true,
         actions: [
@@ -35,10 +36,7 @@ class _HomePageState extends State<HomePage> {
                     icon: const Icon(Icons.language, color: Colors.blue),
                   ),
                 ),
-                Text(
-                  S.of(context).change,
-                  style: const TextStyle(color: Colors.blue),
-                ),
+                Text(S.of(context).change),
               ],
             ),
           ),
@@ -47,7 +45,22 @@ class _HomePageState extends State<HomePage> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [Text(S.of(context).currentLang)],
+          children: [
+            Text(S.of(context).currentLang, style: AppTextStyles.mRegular),
+            SizedBox(height: 50),
+            ElevatedButton(
+              onPressed: () {
+                final themeCubit = context.read<ThemeCubit>();
+
+                if (themeCubit.state == ThemeMode.dark) {
+                  themeCubit.updateTheme(ThemeMode.light);
+                } else {
+                  themeCubit.updateTheme(ThemeMode.dark);
+                }
+              },
+              child: const Text('Change Theme'),
+            ),
+          ],
         ),
       ),
     );

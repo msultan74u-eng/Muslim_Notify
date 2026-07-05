@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'core/themes/theme_cubit/theme_cubit.dart';
+import 'core/themes/theme_data/theme_data_dark.dart';
+import 'core/themes/theme_data/theme_data_light.dart';
 import 'features/home/views/home_page.dart';
 import 'features/language/logic/lang_cubit/lang_cubit.dart';
 import 'features/language/logic/lang_cubit/lang_state.dart';
@@ -11,7 +14,10 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
     MultiBlocProvider(
-      providers: [BlocProvider(create: (context) => LangCubit())],
+      providers: [
+        BlocProvider(create: (context) => LangCubit()),
+        BlocProvider(create: (context) => ThemeCubit()),
+      ],
       child: const MyApp(),
     ),
   );
@@ -19,40 +25,37 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LangCubit, LangState>(
-      builder: (context, state) {
-        if (state is! LangLoaded) {
-          return const MaterialApp(
-            debugShowCheckedModeBanner: false,
-            home: Scaffold(body: Center(child: CircularProgressIndicator())),
-          );
-        }
+    final langState = context.watch<LangCubit>().state;
+    final themeMode = context.watch<ThemeCubit>().state;
 
-        final locale = state.locale;
+    if (langState is! LangLoaded) {
+      return const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+      );
+    }
 
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
 
-          ///      Localization
-          locale: locale,
-          localizationsDelegates: const [
-            S.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: S.delegate.supportedLocales,
+      locale: langState.locale,
 
-          title: 'Flutter Demo',
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          ),
-          home: const HomePage(),
-        );
-      },
+      localizationsDelegates: const [
+        S.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+
+      supportedLocales: S.delegate.supportedLocales,
+
+      theme: getLightTheme(),
+      darkTheme: getDarkTheme(),
+      themeMode: themeMode,
+
+      home: const HomePage(),
     );
   }
 }

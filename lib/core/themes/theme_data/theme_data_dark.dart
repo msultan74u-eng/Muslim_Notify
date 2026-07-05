@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../utils/app_functions.dart';
 import '../app_colors.dart';
 import '../app_fonts.dart';
 import '../app_text_styles.dart';
@@ -8,7 +9,7 @@ ThemeData getDarkTheme() {
   return ThemeData(
     scaffoldBackgroundColor: AppColors.grey_900,
     brightness: Brightness.dark,
-    fontFamily: AppFonts.manrope,
+    fontFamily: isArabic() ? AppFonts.cairo : AppFonts.manrope,
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.primary_300,
       brightness: Brightness.dark,
