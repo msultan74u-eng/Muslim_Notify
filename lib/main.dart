@@ -1,6 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'core/themes/theme_cubit/theme_cubit.dart';
 import 'core/themes/theme_data/theme_data_dark.dart';
@@ -10,8 +13,17 @@ import 'features/language/logic/lang_cubit/lang_cubit.dart';
 import 'features/language/logic/lang_cubit/lang_state.dart';
 import 'generated/l10n.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  ///  initialization of storage for using  Hydrated Bloc
+  HydratedBloc.storage = await HydratedStorage.build(
+    storageDirectory: kIsWeb
+        ? HydratedStorageDirectory.web
+        : HydratedStorageDirectory(
+            (await getApplicationSupportDirectory()).path,
+          ),
+  );
   runApp(
     MultiBlocProvider(
       providers: [

@@ -36,6 +36,8 @@ dependencies:
   intl: any
   flutter_bloc: ^9.1.1
   shared_preferences: ^2.5.5
+  hydrated_bloc: ^11.0.0
+  path_provider: ^2.1.6
 
 dev_dependencies:
   flutter_test:
