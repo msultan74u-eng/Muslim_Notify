@@ -1,5 +1,6 @@
 {
   "appTitle": "Muslim Notify",
-  "change": "EN",
-  "currentLang": "Current time is English"
+  "change": "English",
+  "currentLang": "Current time is English",
+  "item": "item"
 }

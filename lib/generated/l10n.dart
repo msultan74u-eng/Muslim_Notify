@@ -59,9 +59,9 @@ class S {
     return Intl.message('Muslim Notify', name: 'appTitle', desc: '', args: []);
   }
 
-  /// `EN`
+  /// `English`
   String get change {
-    return Intl.message('EN', name: 'change', desc: '', args: []);
+    return Intl.message('English', name: 'change', desc: '', args: []);
   }
 
   /// `Current time is English`
@@ -72,6 +72,11 @@ class S {
       desc: '',
       args: [],
     );
+  }
+
+  /// `item`
+  String get item {
+    return Intl.message('item', name: 'item', desc: '', args: []);
   }
 }
 

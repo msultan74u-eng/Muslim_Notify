@@ -8,9 +8,9 @@ import 'package:path_provider/path_provider.dart';
 import 'core/themes/theme_cubit/theme_cubit.dart';
 import 'core/themes/theme_data/theme_data_dark.dart';
 import 'core/themes/theme_data/theme_data_light.dart';
-import 'features/home/views/home_page.dart';
 import 'features/language/logic/lang_cubit/lang_cubit.dart';
 import 'features/language/logic/lang_cubit/lang_state.dart';
+import 'features/notification/views/notification_page.dart';
 import 'generated/l10n.dart';
 
 void main() async {
@@ -67,7 +67,7 @@ class MyApp extends StatelessWidget {
       darkTheme: getDarkTheme(),
       themeMode: themeMode,
 
-      home: const HomePage(),
+      home: const NotificationPage(),
     );
   }
 }
