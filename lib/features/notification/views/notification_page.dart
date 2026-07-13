@@ -22,6 +22,8 @@ class NotificationPage extends StatefulWidget {
 class _NotificationPageState extends State<NotificationPage> {
   static const double _minHeaderHeight = 56.0;
 
+  /// initial state
+
   @override
   Widget build(BuildContext context) {
     final statusBarHeight = MediaQuery.of(context).padding.top;
@@ -58,32 +60,33 @@ class _NotificationPageState extends State<NotificationPage> {
                     delegate: SliverChildListDelegate([
                       SectionTitle(
                         icon: Icons.access_time_filled_rounded,
-                        title: 'مواعيد الأذان',
-                        subtitle: 'خصّص كل صلاة على حدة',
+                        // title: 'مواعيد الأذان',
+                        title:S.of(context).azanMainTitle,
+                        subtitle: S.of(context).azanSubTitle,
                       ),
                       const SizedBox(height: 12),
                       AdhanCard(),
                       const SizedBox(height: 12),
                       SectionTitle(
                         icon: Icons.wb_twilight_rounded,
-                        title: 'أذكار الصباح والمساء',
-                        subtitle: 'تذكير يومي في وقت ثابت',
+                        title: S.of(context).azkarMainTitle,
+                        subtitle: S.of(context).azkarSubTitle,
                       ),
                       const SizedBox(height: 12),
                       AdhkarCard(),
-                      const SizedBox(height: 12),
-                      SectionTitle(
-                        icon: Icons.favorite_rounded,
-                        title: 'تذكير بالذكر',
-                        subtitle: 'سبحان الله، الحمد لله، لا إله إلا الله',
-                      ),
-                      const SizedBox(height: 12),
-                      DhikrCard(),
+                      // const SizedBox(height: 12),
+                      // SectionTitle(
+                      //   icon: Icons.favorite_rounded,
+                      //   title: S.of(context).dhikrMainTitle,
+                      //   subtitle: S.of(context).dhikrSubTitle,
+                      // ),
+                      // const SizedBox(height: 12),
+                      // DhikrCard(),
                       const SizedBox(height: 12),
                       SectionTitle(
                         icon: Icons.mosque_rounded,
-                        title: 'الصلاة على النبي ﷺ',
-                        subtitle: 'تذكير دوري، ويزيد يوم الجمعة',
+                        title: S.of(context).prophetMainTitle,
+                        subtitle: S.of(context).prophetSubTitle,
                       ),
                       const SizedBox(height: 12),
                       SalawatCard(),

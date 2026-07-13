@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:muslim_notify/features/notification/widgets/switch_row.dart';
 
 import '../../../core/themes/app_colors.dart';
 import '../../../core/utils/app_functions.dart';
+import '../../../generated/l10n.dart';
+import '../logic/cubits/notify_cubit.dart';
 
 class SalawatCard extends StatefulWidget {
   const SalawatCard({super.key});
@@ -12,13 +15,27 @@ class SalawatCard extends StatefulWidget {
 }
 
 class _SalawatCardState extends State<SalawatCard> {
-  bool _salawatEnabled = true;
-  double _salawatHours = 3;
-  bool _fridayBoost = true;
+  List<String> _getIntervalOptions(BuildContext context) {
+    final s = S.of(context);
+    return [
+      s.every15Minutes,
+      s.every20Minutes,
+      s.every30Minutes,
+      s.every1Hour,
+      s.every2Hours,
+      s.every3Hours,
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
+    final s = S.of(context);
+    final state = context.watch<NotifyCubit>().state;
+    final notifyCubit = context.read<NotifyCubit>();
+
+    final int selectedIndex = state.salawatIntervalIndex;
+    final intervalOptions = _getIntervalOptions(context);
 
     return Container(
       decoration: BoxDecoration(
@@ -37,17 +54,17 @@ class _SalawatCardState extends State<SalawatCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SwitchRow(
-            label: 'تفعيل تذكير الصلاة على النبي',
-            value: _salawatEnabled,
-            onChanged: (v) => setState(() => _salawatEnabled = v),
+            label: s.prophetEnable,
+            value: state.salawatEnabled,
+            onChanged: notifyCubit.toggleProphetSalawat,
           ),
-          if (_salawatEnabled) ...[
+          if (state.salawatEnabled) ...[
             const SizedBox(height: 16),
             Row(
               children: [
-                const Text('كل ', style: TextStyle(fontSize: 13)),
+                Text('${s.repeatEvery} ', style: const TextStyle(fontSize: 13)),
                 Text(
-                  '${_salawatHours.round()} ساعة',
+                  intervalOptions[selectedIndex],
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
@@ -64,21 +81,24 @@ class _SalawatCardState extends State<SalawatCard> {
                 overlayColor: AppColors.primary_200.withValues(alpha: 0.3),
               ),
               child: Slider(
-                value: _salawatHours,
-                min: 1,
-                max: 8,
-                divisions: 7,
-                onChanged: (v) => setState(() => _salawatHours = v),
+                value: selectedIndex.toDouble(),
+                min: 0,
+                max: (intervalOptions.length - 1).toDouble(),
+                divisions: intervalOptions.length - 1,
+                label: intervalOptions[selectedIndex],
+                onChanged: (value) {
+                  notifyCubit.changeSalawatInterval(value.toInt());
+                },
               ),
             ),
             const SizedBox(height: 4),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Color(0xFFC9A24B).withValues(alpha: 0.08),
+                color: const Color(0xFFC9A24B).withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: Color(0xFFC9A24B).withValues(alpha: 0.3),
+                  color: const Color(0xFFC9A24B).withValues(alpha: 0.3),
                 ),
               ),
               child: Column(
@@ -92,10 +112,10 @@ class _SalawatCardState extends State<SalawatCard> {
                         color: Color(0xFFC9A24B),
                       ),
                       const SizedBox(width: 6),
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'زيادة التذكيرات يوم الجمعة',
-                          style: TextStyle(
+                          s.fridayBoost,
+                          style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                           ),
@@ -104,18 +124,18 @@ class _SalawatCardState extends State<SalawatCard> {
                       Transform.scale(
                         scale: 0.8,
                         child: Switch(
-                          value: _fridayBoost,
-                          activeThumbColor: Color(0xFFC9A24B),
-                          onChanged: (v) => setState(() => _fridayBoost = v),
+                          value: state.fridayBoost,
+                          activeThumbColor: const Color(0xFFC9A24B),
+                          onChanged: notifyCubit.changeFridayBoost,
                         ),
                       ),
                     ],
                   ),
-                  if (_fridayBoost) ...[
+                  if (state.fridayBoost) ...[
                     const SizedBox(height: 4),
-                    const Text(
-                      'سُنّة الإكثار من الصلاة على النبي ﷺ يوم الجمعة',
-                      style: TextStyle(fontSize: 11.5),
+                    Text(
+                      s.fridayBoostDesc,
+                      style: const TextStyle(fontSize: 11.5),
                     ),
                   ],
                 ],

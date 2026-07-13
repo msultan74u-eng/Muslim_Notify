@@ -22,11 +22,73 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "adhanVoice": MessageLookupByLibrary.simpleMessage(
+      "The sound of the call to prayer",
+    ),
+    "am": MessageLookupByLibrary.simpleMessage("AM"),
     "appTitle": MessageLookupByLibrary.simpleMessage("Muslim Notify"),
+    "asr": MessageLookupByLibrary.simpleMessage("Asr"),
+    "azanMainTitle": MessageLookupByLibrary.simpleMessage("Prayer Times"),
+    "azanSubTitle": MessageLookupByLibrary.simpleMessage(
+      "Customize each prayer individually",
+    ),
+    "azkarEvening": MessageLookupByLibrary.simpleMessage("Evening Adhkar"),
+    "azkarMainTitle": MessageLookupByLibrary.simpleMessage("Daily Adhkar"),
+    "azkarMorning": MessageLookupByLibrary.simpleMessage("Morning Adhkar"),
+    "azkarSleeping": MessageLookupByLibrary.simpleMessage("Sleep Adhkar"),
+    "azkarSubTitle": MessageLookupByLibrary.simpleMessage(
+      "Daily reminder at a fixed time",
+    ),
     "change": MessageLookupByLibrary.simpleMessage("English"),
     "currentLang": MessageLookupByLibrary.simpleMessage(
-      "Current time is English",
+      "Current language: Arabic",
     ),
-    "item": MessageLookupByLibrary.simpleMessage("item"),
+    "dhikrEnable": MessageLookupByLibrary.simpleMessage(
+      "Enable Dhikr Reminder",
+    ),
+    "dhikrMainTitle": MessageLookupByLibrary.simpleMessage("Dhikr Reminder"),
+    "dhikrSubTitle": MessageLookupByLibrary.simpleMessage(
+      "Subhan Allah, Alhamdulillah, La ilaha illallah",
+    ),
+    "dhuhr": MessageLookupByLibrary.simpleMessage("Dhuhr"),
+    "doNotDisturb": MessageLookupByLibrary.simpleMessage(
+      "Do not disturb from 11 PM to 5 AM",
+    ),
+    "every": MessageLookupByLibrary.simpleMessage("Every"),
+    "every15Minutes": MessageLookupByLibrary.simpleMessage("15 mins"),
+    "every1Hour": MessageLookupByLibrary.simpleMessage("1 hour"),
+    "every20Minutes": MessageLookupByLibrary.simpleMessage("20 mins"),
+    "every2Hours": MessageLookupByLibrary.simpleMessage("2 hours"),
+    "every30Minutes": MessageLookupByLibrary.simpleMessage("30 mins"),
+    "every3Hours": MessageLookupByLibrary.simpleMessage("3 hours"),
+    "fajr": MessageLookupByLibrary.simpleMessage("Fajr"),
+    "fridayBoost": MessageLookupByLibrary.simpleMessage(
+      "Increase reminders on Friday",
+    ),
+    "fridayBoostDesc": MessageLookupByLibrary.simpleMessage(
+      "It is Sunnah to send many blessings upon the Prophet ﷺ on Friday",
+    ),
+    "haramAzan": MessageLookupByLibrary.simpleMessage("Makkah Adhan"),
+    "hour": MessageLookupByLibrary.simpleMessage("Hour"),
+    "hours": MessageLookupByLibrary.simpleMessage("Hours"),
+    "howOften": MessageLookupByLibrary.simpleMessage("How often?"),
+    "ishaa": MessageLookupByLibrary.simpleMessage("Isha"),
+    "item": MessageLookupByLibrary.simpleMessage("Item"),
+    "maghrib": MessageLookupByLibrary.simpleMessage("Maghrib"),
+    "minutes": MessageLookupByLibrary.simpleMessage("Minutes"),
+    "pm": MessageLookupByLibrary.simpleMessage("PM"),
+    "prophetEnable": MessageLookupByLibrary.simpleMessage(
+      "Enable Prayers upon the Prophet",
+    ),
+    "prophetMainTitle": MessageLookupByLibrary.simpleMessage(
+      "Prayers upon the Prophet ﷺ",
+    ),
+    "prophetSubTitle": MessageLookupByLibrary.simpleMessage(
+      "Periodic reminder, and it increases on Fridays",
+    ),
+    "rememberAzam": MessageLookupByLibrary.simpleMessage(
+      "Reminder Before Adhan",
+    ),
+    "repeatEvery": MessageLookupByLibrary.simpleMessage("Repeat every"),
   };
 }

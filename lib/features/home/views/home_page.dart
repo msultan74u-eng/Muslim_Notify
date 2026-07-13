@@ -1,9 +1,14 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/themes/theme_cubit/theme_cubit.dart';
 import '../../../generated/l10n.dart';
+import '../../../main.dart';
 import '../../language/logic/lang_cubit/lang_cubit.dart';
+import '../../notification/data/services/local_notification_services.dart';
+import '../../notification/views/notification_page.dart';
 import '../../notification/widgets/notify_header_delegate.dart';
 
 class HomePage extends StatefulWidget {
@@ -90,3 +95,4 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+

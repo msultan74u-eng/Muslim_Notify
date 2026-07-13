@@ -5,12 +5,15 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'bottom_nav_page.dart';
 import 'core/themes/theme_cubit/theme_cubit.dart';
 import 'core/themes/theme_data/theme_data_dark.dart';
 import 'core/themes/theme_data/theme_data_light.dart';
 import 'features/language/logic/lang_cubit/lang_cubit.dart';
 import 'features/language/logic/lang_cubit/lang_state.dart';
-import 'features/notification/views/notification_page.dart';
+import 'features/notification/data/services/local_notification_services.dart';
+import 'features/notification/data/services/work_manager_service.dart';
+import 'features/notification/logic/cubits/notify_cubit.dart';
 import 'generated/l10n.dart';
 
 void main() async {
@@ -24,11 +27,23 @@ void main() async {
             (await getApplicationSupportDirectory()).path,
           ),
   );
+  await Future.wait([
+    LocalNotificationServices.init(),
+    WorkManagerService().init(),
+  ]);
+  await LocalNotificationServices.dailyNightPrayer();
+
+  /// initialize notifications
+  final notifyCubit = NotifyCubit();
+  await notifyCubit.initializeNotifications();
+
   runApp(
     MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => LangCubit()),
         BlocProvider(create: (context) => ThemeCubit()),
+        // BlocProvider(create: (context) => NotifyCubit()),
+        BlocProvider.value(value: notifyCubit),
       ],
       child: const MyApp(),
     ),
@@ -52,22 +67,21 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
 
+      /// Localization for flutter intl
       locale: langState.locale,
-
       localizationsDelegates: const [
         S.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-
       supportedLocales: S.delegate.supportedLocales,
 
       theme: getLightTheme(),
       darkTheme: getDarkTheme(),
       themeMode: themeMode,
 
-      home: const NotificationPage(),
+      home: const BottomNavPage(),
     );
   }
 }

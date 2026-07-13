@@ -3,6 +3,9 @@ import 'package:muslim_notify/features/notification/widgets/switch_row.dart';
 
 import '../../../core/themes/app_colors.dart';
 import '../../../core/utils/app_functions.dart';
+import '../../../generated/l10n.dart';
+
+enum PrayerType { fajr, dhuhr, asr, maghrib, isha }
 
 class AdhanCard extends StatefulWidget {
   const AdhanCard({super.key});
@@ -12,14 +15,29 @@ class AdhanCard extends StatefulWidget {
 }
 
 class _AdhanCardState extends State<AdhanCard> {
-  final Map<String, bool> _adhanEnabled = {
-    'الفجر': true,
-    'الظهر': true,
-    'العصر': true,
-    'المغرب': true,
-    'العشاء': true,
+  final Map<PrayerType, bool> _adhanEnabled = {
+    PrayerType.fajr: true,
+    PrayerType.dhuhr: true,
+    PrayerType.asr: true,
+    PrayerType.maghrib: true,
+    PrayerType.isha: true,
   };
-  late String _expandedPrayer = 'الفجر';
+  late PrayerType _expandedPrayer = PrayerType.fajr;
+
+  String prayerTitle(BuildContext context, PrayerType prayer) {
+    switch (prayer) {
+      case PrayerType.fajr:
+        return S.of(context).fajr;
+      case PrayerType.dhuhr:
+        return S.of(context).dhuhr;
+      case PrayerType.asr:
+        return S.of(context).asr;
+      case PrayerType.maghrib:
+        return S.of(context).maghrib;
+      case PrayerType.isha:
+        return S.of(context).ishaa;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,16 +89,17 @@ class _AdhanCardState extends State<AdhanCard> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              prayer,
+                              prayerTitle(context, prayer),
                               style: const TextStyle(
                                 fontSize: 14.5,
                                 fontWeight: FontWeight.w600,
-                                // color: AppColors.textDark,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              enabled ? 'أذان الحرم المكي' : 'الإشعار متوقف',
+                              enabled
+                                  ? S.of(context).haramAzan
+                                  : 'الإشعار متوقف',
                               style: TextStyle(
                                 fontSize: 11.5,
                                 color: enabled ? null : Colors.grey.shade400,
@@ -117,12 +136,12 @@ class _AdhanCardState extends State<AdhanCard> {
                   child: Column(
                     children: [
                       _dropdownRow(
-                        label: 'صوت الأذان',
-                        value: 'أذان الحرم المكي',
+                        label: S.of(context).adhanVoice,
+                        value: S.of(context).haramAzan,
                       ),
                       const SizedBox(height: 10),
                       SwitchRow(
-                        label: 'تذكير قبل الأذان',
+                        label: S.of(context).rememberAzam,
                         value: false,
                         onChanged: (_) {},
                       ),

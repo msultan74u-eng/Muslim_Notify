@@ -22,11 +22,67 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "adhanVoice": MessageLookupByLibrary.simpleMessage("صوت الأذان"),
+    "am": MessageLookupByLibrary.simpleMessage("ص"),
     "appTitle": MessageLookupByLibrary.simpleMessage("Muslim Notify"),
+    "asr": MessageLookupByLibrary.simpleMessage("العصر"),
+    "azanMainTitle": MessageLookupByLibrary.simpleMessage("مواعيد الآذان"),
+    "azanSubTitle": MessageLookupByLibrary.simpleMessage(
+      "خصص كل صلاةِ على حدة",
+    ),
+    "azkarEvening": MessageLookupByLibrary.simpleMessage("أذكار المساء"),
+    "azkarMainTitle": MessageLookupByLibrary.simpleMessage("أذكار اليوم"),
+    "azkarMorning": MessageLookupByLibrary.simpleMessage("أذكار الصباح"),
+    "azkarSleeping": MessageLookupByLibrary.simpleMessage("أذكار النوم"),
+    "azkarSubTitle": MessageLookupByLibrary.simpleMessage(
+      "تذكير يومي فى وقت ثابت",
+    ),
     "change": MessageLookupByLibrary.simpleMessage("العربية"),
     "currentLang": MessageLookupByLibrary.simpleMessage(
       "اللغة الحالية العربية",
     ),
+    "dhikrEnable": MessageLookupByLibrary.simpleMessage("تفعيل تذكير الذكر"),
+    "dhikrMainTitle": MessageLookupByLibrary.simpleMessage("تذكير بالذكر"),
+    "dhikrSubTitle": MessageLookupByLibrary.simpleMessage(
+      "سبحان الله , الحمد لله , لا إله الا الله",
+    ),
+    "dhuhr": MessageLookupByLibrary.simpleMessage("الظهر"),
+    "doNotDisturb": MessageLookupByLibrary.simpleMessage(
+      "عدم الإزعاج من 11 م إلى 5 ص",
+    ),
+    "every": MessageLookupByLibrary.simpleMessage("كل"),
+    "every15Minutes": MessageLookupByLibrary.simpleMessage("15 دقيقة"),
+    "every1Hour": MessageLookupByLibrary.simpleMessage("ساعة"),
+    "every20Minutes": MessageLookupByLibrary.simpleMessage("20 دقيقة"),
+    "every2Hours": MessageLookupByLibrary.simpleMessage("ساعتين"),
+    "every30Minutes": MessageLookupByLibrary.simpleMessage("30 دقيقة"),
+    "every3Hours": MessageLookupByLibrary.simpleMessage("3 ساعات"),
+    "fajr": MessageLookupByLibrary.simpleMessage("الفجر"),
+    "fridayBoost": MessageLookupByLibrary.simpleMessage(
+      "زيادة التذكيرات يوم الجمعة",
+    ),
+    "fridayBoostDesc": MessageLookupByLibrary.simpleMessage(
+      "سُنّة الإكثار من الصلاة على النبي ﷺ يوم الجمعة",
+    ),
+    "haramAzan": MessageLookupByLibrary.simpleMessage("أذان الحرم المكي"),
+    "hour": MessageLookupByLibrary.simpleMessage("ساعة"),
+    "hours": MessageLookupByLibrary.simpleMessage("ساعات"),
+    "howOften": MessageLookupByLibrary.simpleMessage("كل قد إيه؟"),
+    "ishaa": MessageLookupByLibrary.simpleMessage("العشاء"),
     "item": MessageLookupByLibrary.simpleMessage("عنصر"),
+    "maghrib": MessageLookupByLibrary.simpleMessage("المغرب"),
+    "minutes": MessageLookupByLibrary.simpleMessage("دقيقة"),
+    "pm": MessageLookupByLibrary.simpleMessage("م"),
+    "prophetEnable": MessageLookupByLibrary.simpleMessage(
+      "تفعيل تذكير الصلاة على النبي",
+    ),
+    "prophetMainTitle": MessageLookupByLibrary.simpleMessage(
+      "الصلاة على النبي ﷺ",
+    ),
+    "prophetSubTitle": MessageLookupByLibrary.simpleMessage(
+      "تذكير دوري، ويزيد يوم الجمعة",
+    ),
+    "rememberAzam": MessageLookupByLibrary.simpleMessage("تذكير فبل الآذان"),
+    "repeatEvery": MessageLookupByLibrary.simpleMessage("التكرار كل"),
   };
 }

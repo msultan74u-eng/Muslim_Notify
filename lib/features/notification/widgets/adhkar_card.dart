@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/themes/app_colors.dart';
 import '../../../core/utils/app_functions.dart';
+import '../../../generated/l10n.dart';
+import '../logic/cubits/notify_cubit.dart';
 
 class AdhkarCard extends StatefulWidget {
   const AdhkarCard({super.key});
@@ -11,14 +14,13 @@ class AdhkarCard extends StatefulWidget {
 }
 
 class _AdhkarCardState extends State<AdhkarCard> {
-  final bool _morningAdhkar = true;
-  final bool _eveningAdhkar = true;
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
+    final state = context.watch<NotifyCubit>().state;
+    final notifyCubit = context.read<NotifyCubit>();
 
     return Container(
-      // decoration: _cardDecoration,
       decoration: BoxDecoration(
         color: isDark ? AppColors.grey_800 : AppColors.primary_0,
         borderRadius: BorderRadius.circular(16),
@@ -35,19 +37,34 @@ class _AdhkarCardState extends State<AdhkarCard> {
           _timeSettingRow(
             icon: Icons.wb_sunny_rounded,
             iconColor: AppColors.warning_200,
-            title: 'أذكار الصباح',
-            time: '6:00 ص',
-            enabled: _morningAdhkar,
-            onChanged: (bool value) {},
+            title: S.of(context).azkarMorning,
+            time: '${S.of(context).am} 06:30',
+            enabled: state.azkarSabahEnabled,
+            onChanged: (bool value) {
+              notifyCubit.toggleAzkarSabah(value);
+            },
           ),
           const Divider(height: 1, indent: 16, endIndent: 16),
           _timeSettingRow(
             icon: Icons.nights_stay_rounded,
-            // iconColor: AppColors.primary,
-            title: 'أذكار المساء',
-            time: '5:30 م',
-            enabled: _eveningAdhkar,
-            onChanged: (v) {},
+            title: S.of(context).azkarEvening,
+            time: '${S.of(context).pm} 05:30',
+            enabled: state.azkarAlmasaaEnabled,
+            // enabled: _eveningAdhkar,
+            onChanged: (v) {
+              notifyCubit.toggleAzkarAlmasaa(v);
+            },
+            iconColor: AppColors.primary_200,
+          ),
+          const Divider(height: 1, indent: 16, endIndent: 16),
+          _timeSettingRow(
+            icon: Icons.nightlight,
+            title: S.of(context).azkarSleeping,
+            time: '${S.of(context).pm} 11:25',
+            enabled: state.azkarAlnawmEnabled,
+            onChanged: (v) {
+              notifyCubit.toggleAzkarAlnawm(v);
+            },
             iconColor: AppColors.primary_200,
           ),
         ],
