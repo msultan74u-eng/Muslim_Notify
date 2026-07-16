@@ -20,6 +20,8 @@
   "azkarMorning": "Morning Adhkar",
   "azkarEvening": "Evening Adhkar",
   "azkarSleeping": "Sleep Adhkar",
+  "nightPrayer": "Night Prayer",
+  "lastThirdOfNight": "Last third of night",
   "dhikrMainTitle": "Dhikr Reminder",
   "dhikrSubTitle": "Subhan Allah, Alhamdulillah, La ilaha illallah",
   "dhikrEnable": "Enable Dhikr Reminder",
@@ -40,5 +42,8 @@
   "hours": "Hours",
   "minutes": "Minutes",
   "fridayBoost": "Increase reminders on Friday",
-  "fridayBoostDesc": "It is Sunnah to send many blessings upon the Prophet ﷺ on Friday"
+  "fridayBoostDesc": "It is Sunnah to send many blessings upon the Prophet ﷺ on Friday",
+  "locationRequired": "Location Required",
+  "locationDialogContent": "Please enable location services to calculate prayer times and schedule notifications accurately.",
+  "openSettings": "Open Settings"
 }

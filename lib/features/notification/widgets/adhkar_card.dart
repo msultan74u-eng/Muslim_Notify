@@ -1,24 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/themes/app_colors.dart';
 import '../../../core/utils/app_functions.dart';
 import '../../../generated/l10n.dart';
 import '../logic/cubits/notify_cubit.dart';
 
-class AdhkarCard extends StatefulWidget {
+class AdhkarCard extends StatelessWidget {
   const AdhkarCard({super.key});
 
   @override
-  State<AdhkarCard> createState() => _AdhkarCardState();
-}
-
-class _AdhkarCardState extends State<AdhkarCard> {
-  @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
-    final state = context.watch<NotifyCubit>().state;
-    final notifyCubit = context.read<NotifyCubit>();
 
     return Container(
       decoration: BoxDecoration(
@@ -32,44 +26,79 @@ class _AdhkarCardState extends State<AdhkarCard> {
           ),
         ],
       ),
-      child: Column(
-        children: [
-          _timeSettingRow(
-            icon: Icons.wb_sunny_rounded,
-            iconColor: AppColors.warning_200,
-            title: S.of(context).azkarMorning,
-            time: '${S.of(context).am} 06:30',
-            enabled: state.azkarSabahEnabled,
-            onChanged: (bool value) {
-              notifyCubit.toggleAzkarSabah(value);
-            },
-          ),
-          const Divider(height: 1, indent: 16, endIndent: 16),
-          _timeSettingRow(
-            icon: Icons.nights_stay_rounded,
-            title: S.of(context).azkarEvening,
-            time: '${S.of(context).pm} 05:30',
-            enabled: state.azkarAlmasaaEnabled,
-            // enabled: _eveningAdhkar,
-            onChanged: (v) {
-              notifyCubit.toggleAzkarAlmasaa(v);
-            },
-            iconColor: AppColors.primary_200,
-          ),
-          const Divider(height: 1, indent: 16, endIndent: 16),
-          _timeSettingRow(
-            icon: Icons.nightlight,
-            title: S.of(context).azkarSleeping,
-            time: '${S.of(context).pm} 11:25',
-            enabled: state.azkarAlnawmEnabled,
-            onChanged: (v) {
-              notifyCubit.toggleAzkarAlnawm(v);
-            },
-            iconColor: AppColors.primary_200,
-          ),
-        ],
+      child: BlocBuilder<NotifyCubit, NotifyState>(
+        builder: (context, state) {
+          final notifyCubit = context.read<NotifyCubit>();
+
+          return Column(
+            children: [
+              _timeSettingRow(
+                icon: Icons.wb_sunny_rounded,
+                iconColor: AppColors.warning_200,
+                title: S.of(context).azkarMorning,
+                time: _formatTime(context, state.azkarSabahTime),
+                enabled: state.azkarSabahEnabled,
+                onChanged: (value) {
+                  notifyCubit.toggleAzkarSabah(value);
+                },
+              ),
+
+              const Divider(height: 1, indent: 16, endIndent: 16),
+
+              _timeSettingRow(
+                icon: Icons.nights_stay_rounded,
+                iconColor: AppColors.primary_200,
+                title: S.of(context).azkarEvening,
+                time: _formatTime(context, state.azkarAlmasaaTime),
+                enabled: state.azkarAlmasaaEnabled,
+                onChanged: (value) {
+                  notifyCubit.toggleAzkarAlmasaa(value);
+                },
+              ),
+
+              const Divider(height: 1, indent: 16, endIndent: 16),
+
+              _timeSettingRow(
+                icon: Icons.nightlight,
+                iconColor: AppColors.primary_200,
+                title: S.of(context).azkarSleeping,
+                time: _formatTime(context, state.azkarAlnawmTime),
+                enabled: state.azkarAlnawmEnabled,
+                onChanged: (value) {
+                  notifyCubit.toggleAzkarAlnawm(value);
+                },
+              ),
+
+              const Divider(height: 1, indent: 16, endIndent: 16),
+
+              _timeSettingRow(
+                icon: Icons.auto_awesome,
+                iconColor: Colors.indigo,
+                title: S.of(context).nightPrayer,
+                time: _formatTime(context, state.nightPrayerTime),
+                enabled: state.nightPrayerEnabled,
+                onChanged: (value) {
+                  notifyCubit.toggleNightPrayer(value);
+                },
+              ),
+            ],
+          );
+        },
       ),
     );
+  }
+
+  String _formatTime(BuildContext context, DateTime? dateTime) {
+    if (dateTime == null) {
+      return '--:--';
+    }
+
+    final locale = Localizations.localeOf(context).languageCode;
+
+    return DateFormat(
+      'hh:mm a',
+      locale,
+    ).format(dateTime);
   }
 }
 
@@ -81,8 +110,13 @@ Widget _timeSettingRow({
   required bool enabled,
   required ValueChanged<bool> onChanged,
 }) {
+  final hasTime = time != '--:--';
+
   return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    padding: const EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: 8,
+    ),
     child: Row(
       children: [
         Container(
@@ -91,45 +125,61 @@ Widget _timeSettingRow({
             color: iconColor.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: iconColor, size: 18),
+          child: Icon(
+            icon,
+            color: iconColor,
+            size: 18,
+          ),
         ),
+
         const SizedBox(width: 12),
+
         Expanded(
           child: Text(
             title,
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              // color: AppColors.textDark,
             ),
           ),
         ),
+
         if (enabled)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 5,
+            ),
             margin: const EdgeInsets.only(left: 8),
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: Row(
               children: [
-                const Icon(
-                  Icons.access_time_rounded,
+                Icon(
+                  hasTime
+                      ? Icons.access_time_rounded
+                      : Icons.location_off_rounded,
                   size: 14,
-                  // color: AppColors.textMuted,
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  time,
-                  style: const TextStyle(
+                  hasTime ? time : '—',
+                  style: TextStyle(
                     fontSize: 12.5,
-                    // color: AppColors.textDark,
+                    color: hasTime ? null : Colors.grey,
                   ),
                 ),
               ],
             ),
           ),
+
         Transform.scale(
           scale: 0.85,
-          child: Switch(value: enabled, onChanged: onChanged),
+          child: Switch(
+            value: enabled,
+            onChanged: onChanged,
+          ),
         ),
       ],
     ),

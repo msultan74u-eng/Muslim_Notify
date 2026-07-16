@@ -1,33 +1,53 @@
 part of 'notify_cubit.dart';
 
 class NotifyState {
-  /// 1- salawat notification
+  /// Used to distinguish between:
+  /// 1. No value was provided → keep the old value.
+  /// 2. null was explicitly provided → clear the value.
+  static const _unset = Object();
+
+  /// 1- Salawat notification
   final bool salawatEnabled;
   final int salawatIntervalIndex;
   final bool fridayBoost;
 
-  /// 2-
-  // TODo
-  /// 3- azkar almasaa notification
-  final bool azkarAlmasaaEnabled;
-
-  /// 4- azkar almasaa notification
+  /// 2- Azkar Sabah notification
   final bool azkarSabahEnabled;
+  final DateTime? azkarSabahTime;
 
-  /// 5- azkar alnawm notification
+  /// 3- Azkar Almasaa notification
+  final bool azkarAlmasaaEnabled;
+  final DateTime? azkarAlmasaaTime;
+
+  /// 4- Azkar Alnawm notification
   final bool azkarAlnawmEnabled;
+  final DateTime? azkarAlnawmTime;
+
+  /// 5- Night Prayer notification
+  final bool nightPrayerEnabled;
+  final DateTime? nightPrayerTime;
 
   const NotifyState({
     // 1
     required this.salawatEnabled,
     required this.salawatIntervalIndex,
     required this.fridayBoost,
+
+    // 2
+    required this.azkarSabahEnabled,
+    required this.azkarSabahTime,
+
     // 3
     required this.azkarAlmasaaEnabled,
+    required this.azkarAlmasaaTime,
+
     // 4
-    required this.azkarSabahEnabled,
-    // 5
     required this.azkarAlnawmEnabled,
+    required this.azkarAlnawmTime,
+
+    // 5
+    required this.nightPrayerEnabled,
+    required this.nightPrayerTime,
   });
 
   factory NotifyState.initial() {
@@ -36,12 +56,22 @@ class NotifyState {
       salawatEnabled: true,
       salawatIntervalIndex: 0,
       fridayBoost: true,
+
+      // 2
+      azkarSabahEnabled: true,
+      azkarSabahTime: null,
+
       // 3
       azkarAlmasaaEnabled: true,
+      azkarAlmasaaTime: null,
+
       // 4
-      azkarSabahEnabled: true,
-      // 5
       azkarAlnawmEnabled: true,
+      azkarAlnawmTime: null,
+
+      // 5
+      nightPrayerEnabled: true,
+      nightPrayerTime: null,
     );
   }
 
@@ -50,28 +80,52 @@ class NotifyState {
     bool? salawatEnabled,
     int? salawatIntervalIndex,
     bool? fridayBoost,
+
     // 2
-    ///
+    bool? azkarSabahEnabled,
+    Object? azkarSabahTime = _unset,
+
     // 3
     bool? azkarAlmasaaEnabled,
+    Object? azkarAlmasaaTime = _unset,
+
     // 4
-    bool? azkarSabahEnabled,
-    // 5
     bool? azkarAlnawmEnabled,
+    Object? azkarAlnawmTime = _unset,
+
+    // 5
+    bool? nightPrayerEnabled,
+    Object? nightPrayerTime = _unset,
   }) {
     return NotifyState(
       // 1
       salawatEnabled: salawatEnabled ?? this.salawatEnabled,
       salawatIntervalIndex: salawatIntervalIndex ?? this.salawatIntervalIndex,
       fridayBoost: fridayBoost ?? this.fridayBoost,
+
       // 2
-      ///
+      azkarSabahEnabled: azkarSabahEnabled ?? this.azkarSabahEnabled,
+      azkarSabahTime: azkarSabahTime == _unset
+          ? this.azkarSabahTime
+          : azkarSabahTime as DateTime?,
+
       // 3
       azkarAlmasaaEnabled: azkarAlmasaaEnabled ?? this.azkarAlmasaaEnabled,
+      azkarAlmasaaTime: azkarAlmasaaTime == _unset
+          ? this.azkarAlmasaaTime
+          : azkarAlmasaaTime as DateTime?,
+
       // 4
-      azkarSabahEnabled: azkarSabahEnabled ?? this.azkarSabahEnabled,
-      // 5
       azkarAlnawmEnabled: azkarAlnawmEnabled ?? this.azkarAlnawmEnabled,
+      azkarAlnawmTime: azkarAlnawmTime == _unset
+          ? this.azkarAlnawmTime
+          : azkarAlnawmTime as DateTime?,
+
+      // 5
+      nightPrayerEnabled: nightPrayerEnabled ?? this.nightPrayerEnabled,
+      nightPrayerTime: nightPrayerTime == _unset
+          ? this.nightPrayerTime
+          : nightPrayerTime as DateTime?,
     );
   }
 
@@ -81,14 +135,22 @@ class NotifyState {
       'salawatEnabled': salawatEnabled,
       'salawatIntervalIndex': salawatIntervalIndex,
       'fridayBoost': fridayBoost,
+
       // 2
-      ///
+      'azkarSabahEnabled': azkarSabahEnabled,
+      'azkarSabahTime': azkarSabahTime?.toIso8601String(),
+
       // 3
       'azkarAlmasaaEnabled': azkarAlmasaaEnabled,
+      'azkarAlmasaaTime': azkarAlmasaaTime?.toIso8601String(),
+
       // 4
-      'azkarSabahEnabled': azkarSabahEnabled,
-      // 5
       'azkarAlnawmEnabled': azkarAlnawmEnabled,
+      'azkarAlnawmTime': azkarAlnawmTime?.toIso8601String(),
+
+      // 5
+      'nightPrayerEnabled': nightPrayerEnabled,
+      'nightPrayerTime': nightPrayerTime?.toIso8601String(),
     };
   }
 
@@ -98,14 +160,30 @@ class NotifyState {
       salawatEnabled: map['salawatEnabled'] ?? true,
       salawatIntervalIndex: map['salawatIntervalIndex'] ?? 0,
       fridayBoost: map['fridayBoost'] ?? true,
+
       // 2
-      ///
+      azkarSabahEnabled: map['azkarSabahEnabled'] ?? true,
+      azkarSabahTime: map['azkarSabahTime'] != null
+          ? DateTime.parse(map['azkarSabahTime'])
+          : null,
+
       // 3
       azkarAlmasaaEnabled: map['azkarAlmasaaEnabled'] ?? true,
+      azkarAlmasaaTime: map['azkarAlmasaaTime'] != null
+          ? DateTime.parse(map['azkarAlmasaaTime'])
+          : null,
+
       // 4
-      azkarSabahEnabled: map['azkarSabahEnabled'] ?? true,
-      // 5
       azkarAlnawmEnabled: map['azkarAlnawmEnabled'] ?? true,
+      azkarAlnawmTime: map['azkarAlnawmTime'] != null
+          ? DateTime.parse(map['azkarAlnawmTime'])
+          : null,
+
+      // 5
+      nightPrayerEnabled: map['nightPrayerEnabled'] ?? true,
+      nightPrayerTime: map['nightPrayerTime'] != null
+          ? DateTime.parse(map['nightPrayerTime'])
+          : null,
     );
   }
 }

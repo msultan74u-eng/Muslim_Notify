@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../data/enum/notification_type.dart';
 import '../../data/services/notify_manager.dart';
 
 part 'notify_state.dart';
@@ -13,13 +14,25 @@ class NotifyCubit extends HydratedCubit<NotifyState> {
   final NotifyManager _notifyManager = NotifyManager();
 
   /// * initial state of notify
+
   Future<void> initializeNotifications() async {
     log("🚀 initializeNotifications CALLED");
 
-    await _updateProphetSalawatNotification(state.salawatEnabled);
-    await _updateAzkarAlmasaaNotification(state.azkarAlmasaaEnabled);
-    await _updateAzkarSabahNotification(state.azkarSabahEnabled);
-    await _updateAzkarAlnawmNotification(state.azkarAlnawmEnabled);
+    // Notifications that do not depend on location
+    try {
+      await _updateProphetSalawatNotification(state.salawatEnabled);
+    } catch (e, s) {
+      log("❌ Prophet Salawat Error: $e");
+      log("$s");
+    }
+
+    // Notifications based on prayer times
+    try {
+      await refreshLocationBasedNotifications();
+    } catch (e, s) {
+      log("❌ Location notifications error: $e");
+      log("$s");
+    }
   }
 
   /// * Update methode of notify
@@ -37,34 +50,64 @@ class NotifyCubit extends HydratedCubit<NotifyState> {
       );
     }
   }
-  //
-  // 2-  TODo azkar_Sabah
-  //
+
+  // 2- Azkar Sabah notification
+  Future<void> _updateAzkarSabahNotification(bool enabled) async {
+    if (enabled) {
+      final scheduledTime = await _notifyManager.enableNotifications(
+        NotificationType.azkarSabah,
+      );
+
+      emit(state.copyWith(azkarSabahTime: scheduledTime));
+    } else {
+      await _notifyManager.disableNotifications(NotificationType.azkarSabah);
+
+      emit(state.copyWith(azkarSabahTime: null));
+    }
+  }
 
   // 3- Azkar Almasaa notification
   Future<void> _updateAzkarAlmasaaNotification(bool enabled) async {
     if (enabled) {
-      await _notifyManager.enableNotifications(NotificationType.azkarAlmasaa);
+      final scheduledTime = await _notifyManager.enableNotifications(
+        NotificationType.azkarAlmasaa,
+      );
+
+      emit(state.copyWith(azkarAlmasaaTime: scheduledTime));
     } else {
       await _notifyManager.disableNotifications(NotificationType.azkarAlmasaa);
+
+      emit(state.copyWith(azkarAlmasaaTime: null));
     }
   }
 
-  // 4- Azkar Sabah notification
-  Future<void> _updateAzkarSabahNotification(bool enabled) async {
-    if (enabled) {
-      await _notifyManager.enableNotifications(NotificationType.azkarSabah);
-    } else {
-      await _notifyManager.disableNotifications(NotificationType.azkarSabah);
-    }
-  }
-
-  // 5- Azkar Alnawm notification
+  // 4- Azkar Alnawm notification
   Future<void> _updateAzkarAlnawmNotification(bool enabled) async {
     if (enabled) {
-      await _notifyManager.enableNotifications(NotificationType.azkarAlnawm);
+      final scheduledTime = await _notifyManager.enableNotifications(
+        NotificationType.azkarAlnawm,
+      );
+
+      emit(state.copyWith(azkarAlnawmTime: scheduledTime));
     } else {
       await _notifyManager.disableNotifications(NotificationType.azkarAlnawm);
+
+      emit(state.copyWith(azkarAlnawmTime: null));
+    }
+  }
+
+  // 5- Night Prayer notification
+  Future<void> _updateNightPrayerNotification(bool enabled) async {
+    if (enabled) {
+      final scheduledTime = await _notifyManager.enableNotifications(
+        NotificationType.nightPrayer,
+      );
+
+      emit(state.copyWith(nightPrayerTime: scheduledTime));
+    } else {
+      await _notifyManager.disableNotifications(NotificationType.nightPrayer);
+
+      emit(state.copyWith(nightPrayerTime: null));
     }
   }
 
@@ -74,9 +117,12 @@ class NotifyCubit extends HydratedCubit<NotifyState> {
     emit(state.copyWith(salawatEnabled: enabled));
     await _updateProphetSalawatNotification(enabled);
   }
-  //
-  // 2-  TODo azkar_Sabah
-  //
+
+  // 2- Azkar Sabah notification
+  Future<void> toggleAzkarSabah(bool enabled) async {
+    emit(state.copyWith(azkarSabahEnabled: enabled));
+    await _updateAzkarSabahNotification(enabled);
+  }
 
   // 3- Azkar Almasaa notification
   Future<void> toggleAzkarAlmasaa(bool enabled) async {
@@ -84,20 +130,18 @@ class NotifyCubit extends HydratedCubit<NotifyState> {
     await _updateAzkarAlmasaaNotification(enabled);
   }
 
-  // 4- Azkar Sabah notification
-  Future<void> toggleAzkarSabah(bool enabled) async {
-    emit(state.copyWith(azkarSabahEnabled: enabled));
-    await _updateAzkarSabahNotification(enabled);
-  }
-
-  // 5- Azkar Alnawm notification
+  // 4- Azkar Alnawm notification
   Future<void> toggleAzkarAlnawm(bool enabled) async {
     emit(state.copyWith(azkarAlnawmEnabled: enabled));
     await _updateAzkarAlnawmNotification(enabled);
   }
 
-  ///
-  ///
+  // 5- Night Prayer notification
+  Future<void> toggleNightPrayer(bool enabled) async {
+    emit(state.copyWith(nightPrayerEnabled: enabled));
+    await _updateNightPrayerNotification(enabled);
+  }
+
   ///
   ///
 
@@ -132,8 +176,56 @@ class NotifyCubit extends HydratedCubit<NotifyState> {
     }
   }
 
-  // Hydrated
+  Future<void> refreshNotificationTimes() async {
+    log('🔄 Refreshing notification times...');
 
+    if (state.azkarSabahEnabled) {
+      await _updateAzkarSabahNotification(true);
+    }
+
+    if (state.azkarAlmasaaEnabled) {
+      await _updateAzkarAlmasaaNotification(true);
+    }
+
+    if (state.azkarAlnawmEnabled) {
+      await _updateAzkarAlnawmNotification(true);
+    }
+
+    if (state.nightPrayerEnabled) {
+      await _updateNightPrayerNotification(true);
+    }
+  }
+
+  Future<bool> refreshLocationBasedNotifications() async {
+    log('🔄 Refreshing location-based notifications...');
+
+    try {
+      if (state.azkarSabahEnabled) {
+        await _updateAzkarSabahNotification(true);
+      }
+
+      if (state.azkarAlmasaaEnabled) {
+        await _updateAzkarAlmasaaNotification(true);
+      }
+
+      if (state.azkarAlnawmEnabled) {
+        await _updateAzkarAlnawmNotification(true);
+      }
+
+      if (state.nightPrayerEnabled) {
+        await _updateNightPrayerNotification(true);
+      }
+
+      return true;
+    } catch (e, s) {
+      log('❌ Location notifications error: $e');
+      log('$s');
+
+      return false;
+    }
+  }
+
+  /// Hydrated
   @override
   NotifyState? fromJson(Map<String, dynamic> json) {
     return NotifyState.fromMap(json);

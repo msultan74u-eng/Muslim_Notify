@@ -2,10 +2,11 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
-
-import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
+import '../constant/notification_ids.dart';
+import 'adhan_services/prayer_service.dart';
+import 'timezone_service.dart';
 
 class LocalNotificationServices {
   /// Creating a local notification plugin
@@ -23,39 +24,17 @@ class LocalNotificationServices {
 
   /// for initialize in main.dart
   static Future<void> init() async {
+    await TimezoneService.initialize();
     InitializationSettings settings = InitializationSettings(
       android: AndroidInitializationSettings("@mipmap/ic_launcher"),
 
       iOS: DarwinInitializationSettings(),
     );
-    flutterLocalNotificationsPlugin.initialize(
+    await flutterLocalNotificationsPlugin.initialize(
       settings: settings,
       onDidReceiveNotificationResponse: onTap,
       onDidReceiveBackgroundNotificationResponse: onTap,
     );
-  }
-
-  /// Initialize time zone
-  static Future<void> _initializeTimeZone() async {
-    log("========== TimeZone Initialization ==========");
-
-    tz.initializeTimeZones();
-
-    log("Before → tz.local: ${tz.local}");
-    log("Before → Time: ${tz.TZDateTime.now(tz.local)}");
-
-    final timezone = await FlutterTimezone.getLocalTimezone();
-
-    try {
-      tz.setLocalLocation(tz.getLocation(timezone.identifier));
-    } catch (e) {
-      tz.setLocalLocation(tz.getLocation('Africa/Cairo'));
-    }
-
-    log("After → tz.local: ${tz.local}");
-    log("After → Time: ${tz.TZDateTime.now(tz.local)}");
-
-    log("============================================");
   }
 
   ///  1. Basic Notifications
@@ -117,7 +96,7 @@ class LocalNotificationServices {
       ),
       iOS: const DarwinNotificationDetails(),
     );
-    await _initializeTimeZone();
+    // await _initializeTimeZone();
     final scheduledDate = tz.TZDateTime(
       tz.local,
       DateTime.now().year,
@@ -152,9 +131,9 @@ class LocalNotificationServices {
   ///  ☻☻☻☻☻☻☻☻     → for Muslim Notify      ☻☻☻☻☻☻☻☻
   ///                       Main Prophet Prayer
 
-  // is Friday
   static bool _isFriday() {
-    return tz.TZDateTime.now(tz.local).weekday == DateTime.friday;
+    final now = TimezoneService.currentTime();
+    return now.weekday == DateTime.friday;
   }
 
   static Future<void> scheduleProphetPrayer({
@@ -198,8 +177,9 @@ class LocalNotificationServices {
     }
   }
 
-  /// 1 →  minute prophet prayer
+  /// id : 1 →  minute prophet prayer
   static Future<void> minuteProphetPrayer({int minute = 15}) async {
+    log('🔔 minuteProphetPrayer() CALLED');
     final notificationDetails = NotificationDetails(
       android: AndroidNotificationDetails(
         'prophet_channel_v1',
@@ -212,12 +192,9 @@ class LocalNotificationServices {
       iOS: const DarwinNotificationDetails(),
     );
 
-    await _initializeTimeZone();
-
-    final now = tz.TZDateTime.now(tz.local);
-
-    int nextMinute = ((now.minute ~/ minute) + 1) * minute;
-    int hour = now.hour;
+    final currentTime = TimezoneService.currentTime();
+    int nextMinute = ((currentTime.minute ~/ minute) + 1) * minute;
+    int hour = currentTime.hour;
 
     if (nextMinute >= 60) {
       nextMinute = 0;
@@ -226,19 +203,19 @@ class LocalNotificationServices {
 
     final scheduledDate = tz.TZDateTime(
       tz.local,
-      now.year,
-      now.month,
-      now.day,
+      currentTime.year,
+      currentTime.month,
+      currentTime.day,
       hour,
       nextMinute,
     );
 
-    log("Current Time : $now");
+    log("Current Time : $currentTime");
     log("Scheduled Time : $scheduledDate");
 
     try {
       await flutterLocalNotificationsPlugin.zonedSchedule(
-        id: 1,
+        id: NotificationIds.prophetPrayer,
         title: '🌿 الصلاة على النبي ﷺ',
         body:
             'اللهم صلِّ وسلم وبارك على نبينا محمد، وأكثر من الصلاة عليه في يومك.',
@@ -265,7 +242,7 @@ class LocalNotificationServices {
     }
   }
 
-  /// 2 →  hour prophet prayer
+  /// id : 1 →  hour prophet prayer
   static Future<void> hourProphetPrayer({int hour = 1}) async {
     log('🔔 hourProphetPrayer() CALLED');
     NotificationDetails notificationDetails = NotificationDetails(
@@ -280,26 +257,25 @@ class LocalNotificationServices {
       iOS: const DarwinNotificationDetails(),
     );
 
-    await _initializeTimeZone();
-
-    final currentTimeZone = tz.TZDateTime.now(tz.local);
+    final currentTime = TimezoneService.currentTime();
 
     var scheduledDate = tz.TZDateTime(
       tz.local,
-      currentTimeZone.year,
-      currentTimeZone.month,
-      currentTimeZone.day,
-      currentTimeZone.hour,
+      currentTime.year,
+      currentTime.month,
+      currentTime.day,
+      currentTime.hour,
       00,
     );
 
-    if (scheduledDate.isBefore(currentTimeZone)) {
+    if (scheduledDate.isBefore(currentTime)) {
       scheduledDate = scheduledDate.add(Duration(hours: hour));
     }
-
+    log("Current Time : $currentTime");
+    log("Scheduled Time : $scheduledDate");
     try {
       await flutterLocalNotificationsPlugin.zonedSchedule(
-        id: 1,
+        id: NotificationIds.prophetPrayer,
         title: '🌿 الصلاة على النبي ﷺ',
         body:
             'اللهم صلِّ وسلم وبارك على نبينا محمد، وأكثر من الصلاة عليه في يومك.',
@@ -315,73 +291,11 @@ class LocalNotificationServices {
     }
   }
 
-  /// 3 →  daily azkar almasaa
-  static Future<void> dailyAzkarAlmasaa() async {
-    log('🔔 dailyAzkarAlmasaa() CALLED');
-    NotificationDetails notificationDetails = NotificationDetails(
-      android: AndroidNotificationDetails(
-        'Azkar_Almasaa_channel_v1',
-        'Evening Azkar Notifications',
-        importance: Importance.max,
-        priority: Priority.max,
-        playSound: true,
-        sound: RawResourceAndroidNotificationSound('azkar_almasaa'),
-      ),
-      iOS: const DarwinNotificationDetails(),
-    );
-
-    await _initializeTimeZone();
-
-    final currentTimeZone = tz.TZDateTime.now(tz.local);
-
-    var scheduledDate = tz.TZDateTime(
-      tz.local,
-      currentTimeZone.year,
-      currentTimeZone.month,
-      currentTimeZone.day,
-      17,
-      35,
-    );
-
-    if (scheduledDate.isBefore(currentTimeZone)) {
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
-    }
-    log("Current Time : $currentTimeZone");
-    log("Scheduled Time : $scheduledDate");
-
-    try {
-      await flutterLocalNotificationsPlugin.zonedSchedule(
-        id: 3,
-        title: '🌙 أذكار المساء',
-        body:
-            'اختم يومك بذكر الله، وداوم على أذكار المساء لتحفظ نفسك وتطمئن قلبك.',
-        scheduledDate: scheduledDate,
-        notificationDetails: notificationDetails,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        // matchDateTimeComponents: DateTimeComponents.time,
-      );
-
-      log("✅ daily Azkar Almasaa success");
-      final pending = await flutterLocalNotificationsPlugin
-          .pendingNotificationRequests();
-
-      log("========== Pending Notifications ==========");
-
-      for (final item in pending) {
-        log("ID: ${item.id} | Title: ${item.title}");
-      }
-
-      log("==========================================");
-    } catch (e, s) {
-      log("❌ daily Azkar Almasaa error: $e");
-      log("$s");
-    }
-  }
-
-  /// 4 →  daily azkar sabah
-  static Future<void> dailyAzkarSabah() async {
+  /// id : 2 →  daily azkar sabah
+  static Future<DateTime?> dailyAzkarSabah() async {
     log('🔔 dailyAzkarSabah CALLED');
-    NotificationDetails notificationDetails = NotificationDetails(
+
+    final notificationDetails = NotificationDetails(
       android: AndroidNotificationDetails(
         'Azkar_Sabah_channel_v1',
         'Morning Azkar Notifications',
@@ -393,57 +307,106 @@ class LocalNotificationServices {
       iOS: const DarwinNotificationDetails(),
     );
 
-    await _initializeTimeZone();
+    final currentTime = TimezoneService.currentTime();
 
-    final currentTimeZone = tz.TZDateTime.now(tz.local);
+    var prayerTimes = await PrayerService.getTodayPrayerTimes();
 
-    var scheduledDate = tz.TZDateTime(
-      tz.local,
-      currentTimeZone.year,
-      currentTimeZone.month,
-      currentTimeZone.day,
-      21,
-      25,
-    );
+    var notificationTime = PrayerService.getMorningAzkarTime(prayerTimes);
 
-    if (scheduledDate.isBefore(currentTimeZone)) {
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
+    if (!notificationTime.isAfter(currentTime)) {
+      prayerTimes = await PrayerService.getPrayerTimes(
+        currentTime.add(const Duration(days: 1)),
+      );
+
+      notificationTime = PrayerService.getMorningAzkarTime(prayerTimes);
     }
-    log("Current Time : $currentTimeZone");
-    log("Scheduled Time : $scheduledDate");
+
+    final scheduledDate = tz.TZDateTime.from(notificationTime, tz.local);
+
+    log("Current Time: $currentTime");
+    log("Scheduled Time: $scheduledDate");
 
     try {
       await flutterLocalNotificationsPlugin.zonedSchedule(
-        id: 4,
+        id: NotificationIds.azkarSabah,
         title: '🌞 أذكار الصباح',
         body: 'اذكر الله مع إشراقة هذا الصباح، واجعل لسانك رطبًا بذكره.',
         scheduledDate: scheduledDate,
         notificationDetails: notificationDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        // matchDateTimeComponents: DateTimeComponents.time,
       );
 
       log("✅ daily Azkar Sabah success");
-      final pending = await flutterLocalNotificationsPlugin
-          .pendingNotificationRequests();
 
-      log("========== Pending Notifications ==========");
-
-      for (final item in pending) {
-        log("ID: ${item.id} | Title: ${item.title}");
-      }
-
-      log("==========================================");
+      return scheduledDate;
     } catch (e, s) {
       log("❌ daily Azkar Sabah error: $e");
       log("$s");
+
+      return null;
     }
   }
 
-  /// 5 →  daily azkar Alnawm
-  static Future<void> dailyAzkarAlnawm() async {
+  /// id : 3 →  daily azkar almasaa
+  static Future<DateTime?> dailyAzkarAlmasaa() async {
+    log('🔔 dailyAzkarAlmasaa() CALLED');
+
+    final notificationDetails = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'Azkar_Almasaa_channel_v1',
+        'Evening Azkar Notifications',
+        importance: Importance.max,
+        priority: Priority.max,
+        playSound: true,
+        sound: RawResourceAndroidNotificationSound('azkar_almasaa'),
+      ),
+      iOS: const DarwinNotificationDetails(),
+    );
+
+    final currentTime = TimezoneService.currentTime();
+
+    var prayerTimes = await PrayerService.getTodayPrayerTimes();
+
+    var notificationTime = PrayerService.getEveningAzkarTime(prayerTimes);
+
+    if (!notificationTime.isAfter(currentTime)) {
+      prayerTimes = await PrayerService.getPrayerTimes(
+        currentTime.add(const Duration(days: 1)),
+      );
+
+      notificationTime = PrayerService.getEveningAzkarTime(prayerTimes);
+    }
+
+    final scheduledDate = tz.TZDateTime.from(notificationTime, tz.local);
+
+    log("Current Time : $currentTime");
+    log("Scheduled Time : $scheduledDate");
+
+    try {
+      await flutterLocalNotificationsPlugin.zonedSchedule(
+        id: NotificationIds.azkarAlmasaa,
+        title: '🌙 أذكار المساء',
+        body:
+            'اختم يومك بذكر الله، وداوم على أذكار المساء لتحفظ نفسك وتطمئن قلبك.',
+        scheduledDate: scheduledDate,
+        notificationDetails: notificationDetails,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      );
+
+      log("✅ daily Azkar Almasaa success");
+      return scheduledDate;
+    } catch (e, s) {
+      log("❌ daily Azkar Almasaa error: $e");
+      log("$s");
+      return null;
+    }
+  }
+
+  /// id : 4 →  daily azkar Alnawm
+  static Future<DateTime?> dailyAzkarAlnawm() async {
     log('🔔 dailyAzkarAlnawm CALLED');
-    NotificationDetails notificationDetails = NotificationDetails(
+
+    final notificationDetails = NotificationDetails(
       android: AndroidNotificationDetails(
         'Azkar_Alnawm_channel_v1',
         'Night Azkar Notifications',
@@ -455,37 +418,38 @@ class LocalNotificationServices {
       iOS: const DarwinNotificationDetails(),
     );
 
-    await _initializeTimeZone();
+    final currentTime = TimezoneService.currentTime();
 
-    final currentTimeZone = tz.TZDateTime.now(tz.local);
+    var prayerTimes = await PrayerService.getTodayPrayerTimes();
 
-    var scheduledDate = tz.TZDateTime(
-      tz.local,
-      currentTimeZone.year,
-      currentTimeZone.month,
-      currentTimeZone.day,
-      23,
-      25,
-    );
+    var notificationTime = PrayerService.getSleepingAzkarTime(prayerTimes);
 
-    if (scheduledDate.isBefore(currentTimeZone)) {
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
+    // إذا مر وقت أذكار النوم اليوم، نحسب وقت الغد
+    if (!notificationTime.isAfter(currentTime)) {
+      prayerTimes = await PrayerService.getPrayerTimes(
+        currentTime.add(const Duration(days: 1)),
+      );
+
+      notificationTime = PrayerService.getSleepingAzkarTime(prayerTimes);
     }
-    log("Current Time : $currentTimeZone");
+
+    final scheduledDate = tz.TZDateTime.from(notificationTime, tz.local);
+
+    log("Current Time : $currentTime");
     log("Scheduled Time : $scheduledDate");
 
     try {
       await flutterLocalNotificationsPlugin.zonedSchedule(
-        id: 5,
+        id: NotificationIds.azkarAlnawm,
         title: '🌙 أذكار النوم',
         body: 'اذكر الله قبل نومك، واملأ قلبك سكينةً وطمأنينة.',
         scheduledDate: scheduledDate,
         notificationDetails: notificationDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        // matchDateTimeComponents: DateTimeComponents.time,
       );
 
       log("✅ daily Azkar Alnawm success");
+
       final pending = await flutterLocalNotificationsPlugin
           .pendingNotificationRequests();
 
@@ -496,18 +460,47 @@ class LocalNotificationServices {
       }
 
       log("==========================================");
+      return scheduledDate;
     } catch (e, s) {
       log("❌ daily Azkar Alnawm error: $e");
       log("$s");
+      return null;
     }
   }
 
-  /// 6 →  daily Night Prayer
-  static Future<void> dailyNightPrayer() async {
+  /// id : 5 →  daily Night Prayer
+  static Future<DateTime?> dailyNightPrayer() async {
     log('🔔 dailyNightPrayer() CALLED');
-    NotificationDetails notificationDetails = NotificationDetails(
+
+    final prefs = await SharedPreferences.getInstance();
+
+    // Check if an existing Night Prayer notification is already scheduled
+    final isPending = await isNotificationPending(NotificationIds.nightPrayer);
+
+    // Get the previously saved scheduled time
+    final savedTime = prefs.getString('night_prayer_scheduled_time');
+
+    if (savedTime != null) {
+      log('🌙 Saved Night Prayer Time: $savedTime');
+    }
+
+    if (isPending) {
+      log(
+        '⏭️ Night Prayer notification is already pending. '
+        'No new notification will be scheduled.',
+      );
+
+      // Return the previously scheduled time
+      if (savedTime != null) {
+        return DateTime.tryParse(savedTime);
+      }
+
+      return null;
+    }
+
+    final notificationDetails = NotificationDetails(
       android: AndroidNotificationDetails(
-        'Scheduled_prayer_channel_v6',
+        'Scheduled_prayer_channel_v5',
         'Scheduled Prayer Notifications',
         importance: Importance.max,
         priority: Priority.max,
@@ -517,51 +510,54 @@ class LocalNotificationServices {
       iOS: const DarwinNotificationDetails(),
     );
 
-    await _initializeTimeZone();
+    final currentTime = TimezoneService.currentTime();
 
-    final currentTimeZone = tz.TZDateTime.now(tz.local);
-    log('Current Time.year: ${currentTimeZone.year}');
-    log('Current Time.month: ${currentTimeZone.month}');
-    log('Current Time.day: ${currentTimeZone.day}');
-    log('Current Time.hour: ${currentTimeZone.hour}');
+    var prayerTimes = await PrayerService.getTodayPrayerTimes();
 
-    var scheduledDate = tz.TZDateTime(
-      tz.local,
-      currentTimeZone.year,
-      currentTimeZone.month,
-      currentTimeZone.day,
-      2,
-      30,
+    var notificationTime = await PrayerService.getNightPrayerNotificationTime(
+      prayerTimes,
     );
-    log('Scheduled Date.year: ${scheduledDate.year}');
-    log('Scheduled Date.month: ${scheduledDate.month}');
-    log('Scheduled Date.day: ${scheduledDate.day}');
-    log('Scheduled Date.hour: ${scheduledDate.hour}');
 
-    if (scheduledDate.isBefore(currentTimeZone)) {
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
+    if (!notificationTime.isAfter(currentTime)) {
+      prayerTimes = await PrayerService.getPrayerTimes(
+        currentTime.add(const Duration(days: 1)),
+      );
+
+      notificationTime = await PrayerService.getNightPrayerNotificationTime(
+        prayerTimes,
+      );
     }
-    log('After Scheduled Date.year: ${scheduledDate.year}');
-    log('After Scheduled Date.month: ${scheduledDate.month}');
-    log('After Scheduled Date.day: ${scheduledDate.day}');
-    log('After Scheduled Date.hour: ${scheduledDate.hour}');
+
+    final scheduledDate = tz.TZDateTime.from(notificationTime, tz.local);
+
+    log('🕒 Current Time: $currentTime');
+    log('🌙 Scheduled Time: $scheduledDate');
 
     try {
       await flutterLocalNotificationsPlugin.zonedSchedule(
-        id: 6,
+        id: NotificationIds.nightPrayer,
         title: '🌙 قيام الليل',
         body:
             'اغتنم بركة الثلث الأخير من الليل، وأحيِ قلبك بالصلاة والدعاء وتلاوة القرآن.',
         scheduledDate: scheduledDate,
         notificationDetails: notificationDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        matchDateTimeComponents: DateTimeComponents.time,
       );
 
-      log("✅ daily Night Prayer success");
+      // Save the scheduled notification time
+      await prefs.setString(
+        'night_prayer_scheduled_time',
+        scheduledDate.toIso8601String(),
+      );
+
+      log('✅ Night Prayer notification scheduled successfully.');
+
+      return scheduledDate;
     } catch (e, s) {
-      log("❌ daily Night Prayer error: $e");
-      log("$s");
+      log('❌ Night Prayer notification error: $e');
+      log('$s');
+
+      return null;
     }
   }
 
@@ -572,5 +568,13 @@ class LocalNotificationServices {
 
   static void cancelAllNotifications() async {
     await flutterLocalNotificationsPlugin.cancelAll();
+  }
+
+  /// helpers
+  static Future<bool> isNotificationPending(int id) async {
+    final pending = await flutterLocalNotificationsPlugin
+        .pendingNotificationRequests();
+
+    return pending.any((notification) => notification.id == id);
   }
 }

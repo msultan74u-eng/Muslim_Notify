@@ -209,6 +209,26 @@ class S {
     );
   }
 
+  /// `Night Prayer`
+  String get nightPrayer {
+    return Intl.message(
+      'Night Prayer',
+      name: 'nightPrayer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last third of night`
+  String get lastThirdOfNight {
+    return Intl.message(
+      'Last third of night',
+      name: 'lastThirdOfNight',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Dhikr Reminder`
   String get dhikrMainTitle {
     return Intl.message(
@@ -359,6 +379,36 @@ class S {
     return Intl.message(
       'It is Sunnah to send many blessings upon the Prophet ﷺ on Friday',
       name: 'fridayBoostDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Location Required`
+  String get locationRequired {
+    return Intl.message(
+      'Location Required',
+      name: 'locationRequired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enable location services to calculate prayer times and schedule notifications accurately.`
+  String get locationDialogContent {
+    return Intl.message(
+      'Please enable location services to calculate prayer times and schedule notifications accurately.',
+      name: 'locationDialogContent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open Settings`
+  String get openSettings {
+    return Intl.message(
+      'Open Settings',
+      name: 'openSettings',
       desc: '',
       args: [],
     );

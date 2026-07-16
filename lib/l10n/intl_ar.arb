@@ -20,6 +20,8 @@
   "azkarMorning": "أذكار الصباح",
   "azkarEvening": "أذكار المساء",
   "azkarSleeping":"أذكار النوم",
+  "nightPrayer": "قيام الليل",
+  "lastThirdOfNight": "الثلث الأخير من الليل",
   "dhikrMainTitle": "تذكير بالذكر",
   "dhikrSubTitle": "سبحان الله , الحمد لله , لا إله الا الله",
   "dhikrEnable": "تفعيل تذكير الذكر",
@@ -40,5 +42,8 @@
   "hours": "ساعات",
   "minutes": "دقيقة",
   "fridayBoost": "زيادة التذكيرات يوم الجمعة",
-  "fridayBoostDesc": "سُنّة الإكثار من الصلاة على النبي ﷺ يوم الجمعة"
+  "fridayBoostDesc": "سُنّة الإكثار من الصلاة على النبي ﷺ يوم الجمعة",
+  "locationRequired": "الموقع مطلوب",
+  "locationDialogContent": "يرجى تفعيل خدمات الموقع لحساب مواعيد الصلاة وجدولة التنبيهات بدقة.",
+  "openSettings": "فتح الإعدادات"
 }

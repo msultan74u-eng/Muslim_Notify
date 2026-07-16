@@ -9,22 +9,9 @@ class WorkManagerService {
   ///   * init work manager service
   Future<void> init() async {
     await Workmanager().initialize(actionTask, isInDebugMode: true);
-    await registerMyTask();
   }
 
   /// * register multi task
-
-  Future<void> registerMyTask() async {
-    // قيام الليل
-    await Workmanager().registerPeriodicTask(
-      'night_prayer_task',
-      'night_prayer',
-      frequency: const Duration(minutes: 15),
-      existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
-    );
-  }
-
-  ///  * register single task
 
   /// 1- register Prophet Prayer task
   Future<void> registerProphetPrayerTask() async {
@@ -35,9 +22,16 @@ class WorkManagerService {
       existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
     );
   }
-  //
-  /// 2-  TODo
-  //
+
+  /// 2- register Azkar Sabah task
+  Future<void> registerAzkarSabahTask() async {
+    await Workmanager().registerPeriodicTask(
+      'azkar_sabah_task',
+      'azkar_sabah',
+      frequency: const Duration(minutes: 15),
+      existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
+    );
+  }
 
   /// 3- register Azkar Almasaa task
   Future<void> registerAzkarAlmasaaTask() async {
@@ -49,21 +43,22 @@ class WorkManagerService {
     );
   }
 
-  /// 4- register Azkar Almasaa task
-  Future<void> registerAzkarSabahTask() async {
+  /// 4- register Azkar Alnawm task
+  Future<void> registerAzkarAlnawmTask() async {
     await Workmanager().registerPeriodicTask(
-      'azkar_sabah_task',
-      'azkar_sabah',
+      'azkar_alnawm_task',
+      'azkar_alnawm',
       frequency: const Duration(minutes: 15),
       existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
     );
   }
 
-  /// 5- register Azkar Alnawm task
-  Future<void> registerAzkarAlnawmTask() async {
+  /// 5- register Night Prayer task
+
+  Future<void> registerNightPrayerTask() async {
     await Workmanager().registerPeriodicTask(
-      'azkar_alnawm_task',
-      'azkar_alnawm',
+      'night_prayer_task',
+      'night_prayer',
       frequency: const Duration(minutes: 15),
       existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
     );
@@ -74,9 +69,11 @@ class WorkManagerService {
   Future<void> cancelProphetPrayerTask() async {
     await Workmanager().cancelByUniqueName('prophet_prayer_task');
   }
-  //
-  /// 2-  TODo
-  //
+
+  // 2- cancel Azkar Almasaa task
+  Future<void> cancelAzkarSabahTask() async {
+    await Workmanager().cancelByUniqueName('azkar_sabah_task');
+  }
 
   // 3- cancel Azkar Almasaa task
   Future<void> cancelAzkarAlmasaaTask() async {
@@ -84,13 +81,13 @@ class WorkManagerService {
   }
 
   // 4- cancel Azkar Almasaa task
-  Future<void> cancelAzkarSabahTask() async {
-    await Workmanager().cancelByUniqueName('azkar_sabah_task');
-  }
-
-  // 5- cancel Azkar Almasaa task
   Future<void> cancelAzkarAlnawmTask() async {
     await Workmanager().cancelByUniqueName('azkar_alnawm_task');
+  }
+
+  // 4- cancel Night Prayer Task
+  Future<void> cancelNightPrayerTask() async {
+    await Workmanager().cancelByUniqueName('night_prayer_task');
   }
 
   ///   cancel task by id

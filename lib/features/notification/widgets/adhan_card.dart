@@ -4,8 +4,8 @@ import 'package:muslim_notify/features/notification/widgets/switch_row.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/utils/app_functions.dart';
 import '../../../generated/l10n.dart';
+import '../data/enum/prayer_type.dart';
 
-enum PrayerType { fajr, dhuhr, asr, maghrib, isha }
 
 class AdhanCard extends StatefulWidget {
   const AdhanCard({super.key});

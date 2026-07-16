@@ -42,6 +42,8 @@ dependencies:
   timezone: ^0.11.1
   flutter_timezone: ^5.1.0
   workmanager: ^0.9.0+3
+  adhan_dart: ^2.0.1
+  geolocator: ^14.0.3
 
 dev_dependencies:
   flutter_test:
@@ -74,6 +76,7 @@ flutter:
      - assets/fonts/cairo_font/
      - assets/sound/
      - assets/sound/the_best_human.mp3
+     - assets/sound/azkar_almasaa.mp3
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

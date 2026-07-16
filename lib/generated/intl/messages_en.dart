@@ -74,8 +74,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "howOften": MessageLookupByLibrary.simpleMessage("How often?"),
     "ishaa": MessageLookupByLibrary.simpleMessage("Isha"),
     "item": MessageLookupByLibrary.simpleMessage("Item"),
+    "lastThirdOfNight": MessageLookupByLibrary.simpleMessage(
+      "Last third of night",
+    ),
+    "locationDialogContent": MessageLookupByLibrary.simpleMessage(
+      "Please enable location services to calculate prayer times and schedule notifications accurately.",
+    ),
+    "locationRequired": MessageLookupByLibrary.simpleMessage(
+      "Location Required",
+    ),
     "maghrib": MessageLookupByLibrary.simpleMessage("Maghrib"),
     "minutes": MessageLookupByLibrary.simpleMessage("Minutes"),
+    "nightPrayer": MessageLookupByLibrary.simpleMessage("Night Prayer"),
+    "openSettings": MessageLookupByLibrary.simpleMessage("Open Settings"),
     "pm": MessageLookupByLibrary.simpleMessage("PM"),
     "prophetEnable": MessageLookupByLibrary.simpleMessage(
       "Enable Prayers upon the Prophet",

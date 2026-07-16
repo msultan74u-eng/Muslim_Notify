@@ -70,8 +70,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "howOften": MessageLookupByLibrary.simpleMessage("كل قد إيه؟"),
     "ishaa": MessageLookupByLibrary.simpleMessage("العشاء"),
     "item": MessageLookupByLibrary.simpleMessage("عنصر"),
+    "lastThirdOfNight": MessageLookupByLibrary.simpleMessage(
+      "الثلث الأخير من الليل",
+    ),
+    "locationDialogContent": MessageLookupByLibrary.simpleMessage(
+      "يرجى تفعيل خدمات الموقع لحساب مواعيد الصلاة وجدولة التنبيهات بدقة.",
+    ),
+    "locationRequired": MessageLookupByLibrary.simpleMessage("الموقع مطلوب"),
     "maghrib": MessageLookupByLibrary.simpleMessage("المغرب"),
     "minutes": MessageLookupByLibrary.simpleMessage("دقيقة"),
+    "nightPrayer": MessageLookupByLibrary.simpleMessage("قيام الليل"),
+    "openSettings": MessageLookupByLibrary.simpleMessage("فتح الإعدادات"),
     "pm": MessageLookupByLibrary.simpleMessage("م"),
     "prophetEnable": MessageLookupByLibrary.simpleMessage(
       "تفعيل تذكير الصلاة على النبي",
