@@ -2,7 +2,18 @@ import '../enum/prayer_type.dart';
 
 abstract final class NotificationIds {
   /// Salawat Notifications
-  static const int prophetPrayer = 1;
+  // static const int prophetPrayer = 1;
+
+  /// * Prophet Prayer Notifications
+  static const int prophetPrayerBase = 1000;
+
+  // Number of future notifications scheduled in one batch
+  static const int prophetPrayerSlots = 8;
+
+  // Returns a unique ID for each Prophet Prayer notification
+  static int prophetPrayerId(int index) {
+    return prophetPrayerBase + index;
+  }
 
   /// Azkar Notifications
   static const int azkarSabah = 2;

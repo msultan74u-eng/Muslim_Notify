@@ -18,19 +18,24 @@ class NotifyCubit extends HydratedCubit<NotifyState> {
   Future<void> initializeNotifications() async {
     log("🚀 initializeNotifications CALLED");
 
-    // Notifications that do not depend on location
-    try {
-      await _updateProphetSalawatNotification(state.salawatEnabled);
-    } catch (e, s) {
-      log("❌ Prophet Salawat Error: $e");
-      log("$s");
-    }
+    await initializeProphetSalawatOnly();
 
-    // Notifications based on prayer times
     try {
       await refreshLocationBasedNotifications();
     } catch (e, s) {
       log("❌ Location notifications error: $e");
+      log("$s");
+    }
+  }
+
+  Future<void> initializeProphetSalawatOnly() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('salawat_enabled', state.salawatEnabled);
+
+    try {
+      await _updateProphetSalawatNotification(state.salawatEnabled);
+    } catch (e, s) {
+      log("❌ Prophet Salawat Error: $e");
       log("$s");
     }
   }
@@ -115,6 +120,8 @@ class NotifyCubit extends HydratedCubit<NotifyState> {
   // 1- Prophet Salawat notification
   Future<void> toggleProphetSalawat(bool enabled) async {
     emit(state.copyWith(salawatEnabled: enabled));
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('salawat_enabled', enabled); // ← سطر جديد
     await _updateProphetSalawatNotification(enabled);
   }
 
@@ -173,26 +180,6 @@ class NotifyCubit extends HydratedCubit<NotifyState> {
         salawatIntervalIndex: state.salawatIntervalIndex,
         fridayBoost: value,
       );
-    }
-  }
-
-  Future<void> refreshNotificationTimes() async {
-    log('🔄 Refreshing notification times...');
-
-    if (state.azkarSabahEnabled) {
-      await _updateAzkarSabahNotification(true);
-    }
-
-    if (state.azkarAlmasaaEnabled) {
-      await _updateAzkarAlmasaaNotification(true);
-    }
-
-    if (state.azkarAlnawmEnabled) {
-      await _updateAzkarAlnawmNotification(true);
-    }
-
-    if (state.nightPrayerEnabled) {
-      await _updateNightPrayerNotification(true);
     }
   }
 

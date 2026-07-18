@@ -140,41 +140,42 @@ class LocalNotificationServices {
     required int intervalIndex,
     required bool fridayBoost,
   }) async {
-    if (fridayBoost && _isFriday()) {
-      log("🌙 Friday Boost Enabled → Scheduling every 15 minutes");
-      await minuteProphetPrayer(minute: 15);
+    final prefs = await SharedPreferences.getInstance();
+
+    final lastIntervalIndex = prefs.getInt(
+      'last_prophet_prayer_interval_index',
+    );
+    final intervalChanged =
+        lastIntervalIndex == null || lastIntervalIndex != intervalIndex;
+    final pendingCount = await getPendingProphetPrayerNotificationsCount();
+    const minimumPendingNotifications = 4;
+    if (!intervalChanged && pendingCount >= minimumPendingNotifications) {
+      log(
+        '⏭️ Prophet Prayer notifications are still sufficient '
+        '($pendingCount pending). '
+        'Skipping new batch scheduling.',
+      );
       return;
-    } else {
-      log("🌙 it isn`t Friday ");
-      switch (intervalIndex) {
-        case 0:
-          await minuteProphetPrayer(minute: 15);
-          break;
-
-        case 1:
-          await minuteProphetPrayer(minute: 20);
-          break;
-
-        case 2:
-          await minuteProphetPrayer(minute: 30);
-          break;
-
-        case 3:
-          await hourProphetPrayer(hour: 1);
-          break;
-
-        case 4:
-          await hourProphetPrayer(hour: 2);
-          break;
-
-        case 5:
-          await hourProphetPrayer(hour: 3);
-          break;
-
-        default:
-          await minuteProphetPrayer(minute: 15);
-      }
     }
+    if (intervalChanged) {
+      log(
+        '🔄 Interval changed → cancelling old notifications and rescheduling',
+      );
+      await cancelAllProphetPrayerNotifications();
+    }
+    Duration interval;
+    if (fridayBoost && _isFriday()) {
+      log(
+        '🌙 Friday Boost Enabled '
+        '→ Scheduling every 15 minutes',
+      );
+      interval = const Duration(minutes: 15);
+    } else {
+      interval = _getProphetPrayerInterval(intervalIndex);
+      log('🌙 Prophet Prayer interval: $interval');
+    }
+    await _scheduleProphetPrayerBatch(interval: interval);
+    await prefs.setInt('last_prophet_prayer_interval_index', intervalIndex);
   }
 
   /// id : 1 →  minute prophet prayer
@@ -215,7 +216,8 @@ class LocalNotificationServices {
 
     try {
       await flutterLocalNotificationsPlugin.zonedSchedule(
-        id: NotificationIds.prophetPrayer,
+        // id: NotificationIds.prophetPrayer,
+        id: 0,
         title: '🌿 الصلاة على النبي ﷺ',
         body:
             'اللهم صلِّ وسلم وبارك على نبينا محمد، وأكثر من الصلاة عليه في يومك.',
@@ -275,7 +277,8 @@ class LocalNotificationServices {
     log("Scheduled Time : $scheduledDate");
     try {
       await flutterLocalNotificationsPlugin.zonedSchedule(
-        id: NotificationIds.prophetPrayer,
+        // id: NotificationIds.prophetPrayer,
+        id: 0,
         title: '🌿 الصلاة على النبي ﷺ',
         body:
             'اللهم صلِّ وسلم وبارك على نبينا محمد، وأكثر من الصلاة عليه في يومك.',
@@ -570,11 +573,137 @@ class LocalNotificationServices {
     await flutterLocalNotificationsPlugin.cancelAll();
   }
 
+  // Cancel all Prophet prayer notification
+  static Future<void> cancelAllProphetPrayerNotifications() async {
+    log('🗑️ Cancelling all Prophet Prayer notifications...');
+    for (int i = 0; i < NotificationIds.prophetPrayerSlots; i++) {
+      final notificationId = NotificationIds.prophetPrayerId(i);
+      await cancelNotification(notificationId);
+      log('❌ Cancelled Prophet Prayer notification: $notificationId');
+    }
+    log('✅ All Prophet Prayer notifications cancelled');
+  }
+
   /// helpers
   static Future<bool> isNotificationPending(int id) async {
     final pending = await flutterLocalNotificationsPlugin
         .pendingNotificationRequests();
 
     return pending.any((notification) => notification.id == id);
+  }
+
+  // get prophet prayer interval
+  static Duration _getProphetPrayerInterval(int intervalIndex) {
+    return switch (intervalIndex) {
+      0 => const Duration(minutes: 15),
+      1 => const Duration(minutes: 20),
+      2 => const Duration(minutes: 30),
+      3 => const Duration(hours: 1),
+      4 => const Duration(hours: 2),
+      5 => const Duration(hours: 3),
+      _ => const Duration(minutes: 15),
+    };
+  }
+
+  static tz.TZDateTime _getNextProphetPrayerTime({required Duration interval}) {
+    final currentTime = TimezoneService.currentTime();
+    final intervalMinutes = interval.inMinutes;
+    final currentMinutes = currentTime.hour * 60 + currentTime.minute;
+    final nextIntervalMinutes =
+        ((currentMinutes ~/ intervalMinutes) + 1) * intervalMinutes;
+    final nextDay = nextIntervalMinutes >= 24 * 60;
+
+    if (nextDay) {
+      return tz.TZDateTime(
+        tz.local,
+        currentTime.year,
+        currentTime.month,
+        currentTime.day,
+        00,
+        00,
+      ).add(const Duration(days: 1));
+    }
+    final nextHour = nextIntervalMinutes ~/ 60;
+    final nextMinute = nextIntervalMinutes % 60;
+    return tz.TZDateTime(
+      tz.local,
+      currentTime.year,
+      currentTime.month,
+      currentTime.day,
+      nextHour,
+      nextMinute,
+    );
+  }
+
+  /// new update salawat prophet
+
+  static Future<void> _scheduleProphetPrayerNotification({
+    required int notificationId,
+    required tz.TZDateTime scheduledDate,
+  }) async {
+    final notificationDetails = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'prophet_channel_v1',
+        'Prophet Notifications',
+        importance: Importance.max,
+        priority: Priority.max,
+        playSound: true,
+        sound: RawResourceAndroidNotificationSound('the_best_human'),
+      ),
+      iOS: const DarwinNotificationDetails(),
+    );
+
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+      id: notificationId,
+      title: '🌿 الصلاة على النبي ﷺ',
+      body:
+          'اللهم صلِّ وسلم وبارك على نبينا محمد، وأكثر من الصلاة عليه في يومك.',
+      scheduledDate: scheduledDate,
+      notificationDetails: notificationDetails,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
+
+    log(
+      '✅ Prophet Prayer scheduled '
+      '→ ID: $notificationId '
+      '→ Time: $scheduledDate',
+    );
+  }
+
+  static Future<void> _scheduleProphetPrayerBatch({
+    required Duration interval,
+  }) async {
+    log('📦 Scheduling Prophet Prayer batch...');
+    log('⏱️ Interval: $interval');
+
+    var scheduledDate = _getNextProphetPrayerTime(interval: interval);
+
+    for (int i = 0; i < NotificationIds.prophetPrayerSlots; i++) {
+      final notificationId = NotificationIds.prophetPrayerId(i);
+
+      await _scheduleProphetPrayerNotification(
+        notificationId: notificationId,
+        scheduledDate: scheduledDate,
+      );
+
+      scheduledDate = scheduledDate.add(interval);
+    }
+
+    log('✅ Prophet Prayer batch scheduled successfully');
+  }
+
+  static Future<int> getPendingProphetPrayerNotificationsCount() async {
+    final pending = await flutterLocalNotificationsPlugin
+        .pendingNotificationRequests();
+
+    final prophetPrayerNotifications = pending.where(
+      (notification) =>
+          notification.id >= NotificationIds.prophetPrayerBase &&
+          notification.id <
+              NotificationIds.prophetPrayerBase +
+                  NotificationIds.prophetPrayerSlots,
+    );
+
+    return prophetPrayerNotifications.length;
   }
 }

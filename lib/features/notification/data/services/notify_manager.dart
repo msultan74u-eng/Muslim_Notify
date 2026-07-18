@@ -13,6 +13,8 @@ class NotifyManager {
   }) async {
     switch (type) {
       case NotificationType.prophetSalawat:
+        await LocalNotificationServices.cancelAllProphetPrayerNotifications();
+
         await _workManager.registerProphetPrayerTask();
 
         await LocalNotificationServices.scheduleProphetPrayer(
@@ -49,9 +51,7 @@ class NotifyManager {
       case NotificationType.prophetSalawat:
         await _workManager.cancelProphetPrayerTask();
 
-        await LocalNotificationServices.cancelNotification(
-          NotificationIds.prophetPrayer,
-        );
+        await LocalNotificationServices.cancelAllProphetPrayerNotifications();
         break;
 
       case NotificationType.azkarSabah:

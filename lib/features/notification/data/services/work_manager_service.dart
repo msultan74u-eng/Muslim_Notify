@@ -19,7 +19,7 @@ class WorkManagerService {
       'prophet_prayer_task',
       'prophet_prayer',
       frequency: const Duration(minutes: 15),
-      existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
+      existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
     );
   }
 
@@ -110,6 +110,14 @@ void actionTask() {
       case 'prophet_prayer':
         log("🔥 prophet_prayer task fired");
         final prefs = await SharedPreferences.getInstance();
+
+        final isSalawatEnabled =
+            prefs.getBool('salawat_enabled') ?? true; // ← سطر جديد
+        if (!isSalawatEnabled) {
+          // ←
+          log("⏸️ Salawat notifications disabled by user. Skipping task."); // ←
+          break; // ←
+        }
         final intervalIndex = prefs.getInt('salawat_interval_index') ?? 0;
         final fridayBoost = prefs.getBool('friday_boost') ?? true;
 
