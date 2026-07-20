@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@raw/azkar_sabah,@raw/azkar_almasaa,@raw/azkar_alnawm,@raw/the_best_human" />

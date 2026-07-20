@@ -43,6 +43,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "currentLang": MessageLookupByLibrary.simpleMessage(
       "Current language: Arabic",
     ),
+    "darkMode": MessageLookupByLibrary.simpleMessage("Dark Mode"),
     "dhikrEnable": MessageLookupByLibrary.simpleMessage(
       "Enable Dhikr Reminder",
     ),
@@ -77,6 +78,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "lastThirdOfNight": MessageLookupByLibrary.simpleMessage(
       "Last third of night",
     ),
+    "lightMode": MessageLookupByLibrary.simpleMessage("Light Mode"),
     "locationDialogContent": MessageLookupByLibrary.simpleMessage(
       "Please enable location services to calculate prayer times and schedule notifications accurately.",
     ),
@@ -86,6 +88,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "maghrib": MessageLookupByLibrary.simpleMessage("Maghrib"),
     "minutes": MessageLookupByLibrary.simpleMessage("Minutes"),
     "nightPrayer": MessageLookupByLibrary.simpleMessage("Night Prayer"),
+    "notificationOff": MessageLookupByLibrary.simpleMessage("Notification off"),
     "openSettings": MessageLookupByLibrary.simpleMessage("Open Settings"),
     "pm": MessageLookupByLibrary.simpleMessage("PM"),
     "prophetEnable": MessageLookupByLibrary.simpleMessage(
@@ -101,5 +104,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "Reminder Before Adhan",
     ),
     "repeatEvery": MessageLookupByLibrary.simpleMessage("Repeat every"),
+    "settings": MessageLookupByLibrary.simpleMessage("Settings"),
   };
 }

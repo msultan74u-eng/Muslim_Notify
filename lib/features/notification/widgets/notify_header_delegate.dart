@@ -201,7 +201,7 @@ class NotifyHeaderDelegate extends SliverPersistentHeaderDelegate {
           top: collapsedNameTop,
           right: isArabic() ? null : 12,
           left: isArabic() ? 12 : null,
-          child: Icon(Icons.menu),
+          child: GestureDetector(onTap: onTap, child: Icon(Icons.menu)),
         ),
       ],
     );

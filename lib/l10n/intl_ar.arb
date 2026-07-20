@@ -13,6 +13,7 @@
   "asr": "العصر",
   "maghrib": "المغرب",
   "ishaa": "العشاء",
+  "notificationOff": "الإشعار متوقف",
   "azkarMainTitle": "أذكار اليوم",
   "azkarSubTitle": "تذكير يومي فى وقت ثابت",
   "am": "ص",
@@ -45,5 +46,11 @@
   "fridayBoostDesc": "سُنّة الإكثار من الصلاة على النبي ﷺ يوم الجمعة",
   "locationRequired": "الموقع مطلوب",
   "locationDialogContent": "يرجى تفعيل خدمات الموقع لحساب مواعيد الصلاة وجدولة التنبيهات بدقة.",
-  "openSettings": "فتح الإعدادات"
+  "openSettings": "فتح الإعدادات",
+  "locationDisabled": "خدمات الموقع متوقفة.",
+  "locationDenied": "تم رفض إذن الوصول إلى الموقع.",
+  "locationPermanentlyDenied": "إذن الموقع مرفوض نهائياً. يرجى تفعيله من إعدادات التطبيق.",
+  "settings": "الإعدادات",
+  "darkMode": "الوضع الليلي",
+  "lightMode": "الوضع النهاري"
 }

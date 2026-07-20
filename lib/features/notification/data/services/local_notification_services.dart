@@ -37,6 +37,33 @@ class LocalNotificationServices {
     );
   }
 
+
+  static Future<bool> requestPermissions() async {
+    final androidPlugin = flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+
+    if (androidPlugin == null) return true;
+
+    // 1. POST_NOTIFICATIONS (Android 13+)
+    final notifGranted =
+        await androidPlugin.requestNotificationsPermission() ?? false;
+    log('📩 Notifications permission granted: $notifGranted');
+
+    // 2. Exact Alarm permission (Android 12+)
+    final canScheduleExact =
+        await androidPlugin.canScheduleExactNotifications() ?? false;
+    log('⏰ Can schedule exact alarms: $canScheduleExact');
+
+    if (!canScheduleExact) {
+      final exactGranted =
+          await androidPlugin.requestExactAlarmsPermission() ?? false;
+      log('⏰ Exact alarms permission granted: $exactGranted');
+      return notifGranted && exactGranted;
+    }
+
+    return notifGranted && canScheduleExact;
+  }
+
   ///  1. Basic Notifications
   static void showNotification() async {
     NotificationDetails notificationDetails = NotificationDetails(
@@ -503,8 +530,8 @@ class LocalNotificationServices {
 
     final notificationDetails = NotificationDetails(
       android: AndroidNotificationDetails(
-        'Scheduled_prayer_channel_v5',
-        'Scheduled Prayer Notifications',
+        'Scheduled_Night_prayer_channel_v5',
+        'Scheduled Night Prayer Notifications',
         importance: Importance.max,
         priority: Priority.max,
         playSound: true,

@@ -34,6 +34,8 @@ void main() async {
     WorkManagerService().init(),
   ]);
 
+  await LocalNotificationServices.requestPermissions();
+
   // Create NotifyCubit
   final notifyCubit = NotifyCubit();
 

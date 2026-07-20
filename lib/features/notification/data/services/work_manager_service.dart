@@ -8,7 +8,7 @@ import 'local_notification_services.dart';
 class WorkManagerService {
   ///   * init work manager service
   Future<void> init() async {
-    await Workmanager().initialize(actionTask, isInDebugMode: true);
+    await Workmanager().initialize(actionTask);
   }
 
   /// * register multi task

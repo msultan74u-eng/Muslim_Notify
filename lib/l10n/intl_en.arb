@@ -13,6 +13,7 @@
   "asr": "Asr",
   "maghrib": "Maghrib",
   "ishaa": "Isha",
+  "notificationOff": "Notification off",
   "azkarMainTitle": "Daily Adhkar",
   "azkarSubTitle": "Daily reminder at a fixed time",
   "am": "AM",
@@ -45,5 +46,8 @@
   "fridayBoostDesc": "It is Sunnah to send many blessings upon the Prophet ﷺ on Friday",
   "locationRequired": "Location Required",
   "locationDialogContent": "Please enable location services to calculate prayer times and schedule notifications accurately.",
-  "openSettings": "Open Settings"
+  "openSettings": "Open Settings",
+  "settings": "Settings",
+  "darkMode": "Dark Mode",
+  "lightMode": "Light Mode"
 }

@@ -74,9 +74,7 @@ flutter:
      - assets/images/
      - assets/fonts/manrope_font/
      - assets/fonts/cairo_font/
-     - assets/sound/
-     - assets/sound/the_best_human.mp3
-     - assets/sound/azkar_almasaa.mp3
+
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -149,6 +149,16 @@ class S {
     return Intl.message('Isha', name: 'ishaa', desc: '', args: []);
   }
 
+  /// `Notification off`
+  String get notificationOff {
+    return Intl.message(
+      'Notification off',
+      name: 'notificationOff',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Daily Adhkar`
   String get azkarMainTitle {
     return Intl.message(
@@ -412,6 +422,21 @@ class S {
       desc: '',
       args: [],
     );
+  }
+
+  /// `Settings`
+  String get settings {
+    return Intl.message('Settings', name: 'settings', desc: '', args: []);
+  }
+
+  /// `Dark Mode`
+  String get darkMode {
+    return Intl.message('Dark Mode', name: 'darkMode', desc: '', args: []);
+  }
+
+  /// `Light Mode`
+  String get lightMode {
+    return Intl.message('Light Mode', name: 'lightMode', desc: '', args: []);
   }
 }
 

@@ -41,6 +41,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "currentLang": MessageLookupByLibrary.simpleMessage(
       "اللغة الحالية العربية",
     ),
+    "darkMode": MessageLookupByLibrary.simpleMessage("الوضع الليلي"),
     "dhikrEnable": MessageLookupByLibrary.simpleMessage("تفعيل تذكير الذكر"),
     "dhikrMainTitle": MessageLookupByLibrary.simpleMessage("تذكير بالذكر"),
     "dhikrSubTitle": MessageLookupByLibrary.simpleMessage(
@@ -73,6 +74,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "lastThirdOfNight": MessageLookupByLibrary.simpleMessage(
       "الثلث الأخير من الليل",
     ),
+    "lightMode": MessageLookupByLibrary.simpleMessage("الوضع النهاري"),
     "locationDialogContent": MessageLookupByLibrary.simpleMessage(
       "يرجى تفعيل خدمات الموقع لحساب مواعيد الصلاة وجدولة التنبيهات بدقة.",
     ),
@@ -80,6 +82,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "maghrib": MessageLookupByLibrary.simpleMessage("المغرب"),
     "minutes": MessageLookupByLibrary.simpleMessage("دقيقة"),
     "nightPrayer": MessageLookupByLibrary.simpleMessage("قيام الليل"),
+    "notificationOff": MessageLookupByLibrary.simpleMessage("الإشعار متوقف"),
     "openSettings": MessageLookupByLibrary.simpleMessage("فتح الإعدادات"),
     "pm": MessageLookupByLibrary.simpleMessage("م"),
     "prophetEnable": MessageLookupByLibrary.simpleMessage(
@@ -93,5 +96,6 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "rememberAzam": MessageLookupByLibrary.simpleMessage("تذكير فبل الآذان"),
     "repeatEvery": MessageLookupByLibrary.simpleMessage("التكرار كل"),
+    "settings": MessageLookupByLibrary.simpleMessage("الإعدادات"),
   };
 }
