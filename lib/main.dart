@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'core/navigation/app_navigator.dart';
 import 'core/themes/theme_cubit/theme_cubit.dart';
 import 'core/themes/theme_data/theme_data_dark.dart';
 import 'core/themes/theme_data/theme_data_light.dart';
@@ -12,7 +13,7 @@ import 'features/language/logic/lang_cubit/lang_cubit.dart';
 import 'features/language/logic/lang_cubit/lang_state.dart';
 import 'features/notification/data/services/local_notification_services.dart';
 import 'features/notification/data/services/work_manager_service.dart';
-import 'features/notification/logic/cubits/notify_cubit.dart';
+import 'features/notification/logic/notify_cubit/notify_cubit.dart';
 import 'features/notification/widgets/notification_initializer.dart';
 import 'generated/l10n.dart';
 
@@ -68,6 +69,8 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+
+      navigatorKey: navigatorKey,
 
       // Localization
       locale: langState.locale,

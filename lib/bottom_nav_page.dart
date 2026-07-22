@@ -1,9 +1,13 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'core/navigation/app_navigator.dart';
 import 'features/home/views/home_page.dart';
 import 'features/notification/data/services/local_notification_services.dart';
+import 'features/notification/logic/prayer_times_cubit/prayer_times_cubit.dart';
+import 'features/notification/views/adhan_page.dart';
 import 'features/notification/views/notification_page.dart';
 
 class BottomNavPage extends StatefulWidget {
@@ -15,30 +19,42 @@ class BottomNavPage extends StatefulWidget {
 
 class _BottomNavPageState extends State<BottomNavPage> {
   int _currentIndex = 0;
+
   final List<Widget> _screens = [
-    NotificationPage(),
-    HomePage(),
-    LearnNotification(),
+    const NotificationPage(),
+    const HomePage(),
+    const LearnNotification(),
   ];
 
-  /// initial state
+  /// Initial state
   @override
   void initState() {
     super.initState();
+
     listenToNotificationStream();
   }
 
-  /// send context to work Manager → Notification
+  /// Send context to WorkManager → Notification
+
   void listenToNotificationStream() {
     LocalNotificationServices.streamController.stream.listen((
       notificationResponse,
     ) {
-      log(' ID Notify → ${notificationResponse.id!.toString()}');
-      log(' Payload → ${notificationResponse.payload}');
-      // Navigator.push(
-      //   context,
-      //   MaterialPageRoute(builder: (context) => NotificationPage()),
-      // );
+      log('🔥 Notification Listener Fired');
+      log('Payload = ${notificationResponse.payload}');
+
+      final payload = notificationResponse.payload ?? '';
+
+      if (payload.startsWith('prayer_adhan')) {
+        final prayerType = payload.split('|')[1];
+
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(builder: (_) => AdhanPage(prayerType: prayerType)),
+        );
+
+        return;
+      }
+
       setState(() {
         _currentIndex = 2;
       });
@@ -47,32 +63,48 @@ class _BottomNavPageState extends State<BottomNavPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _screens),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        destinations: [
-          NavigationDestination(
-            icon: Icon(Icons.notifications),
-            selectedIcon: Icon(Icons.notifications),
-            label: 'Notifications',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.home),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.notifications),
-            selectedIcon: Icon(Icons.notifications),
-            label: 'Learn',
-          ),
-        ],
+    return MultiBlocProvider(
+      providers: [
+        // BlocProvider<NotifyCubit>(
+        //   create: (_) => NotifyCubit()..initializeNotifications(),
+        // ),
+        BlocProvider<PrayerTimesCubit>(
+          create: (_) => PrayerTimesCubit()..getTodayPrayerTimes(),
+        ),
+      ],
+
+      child: Scaffold(
+        body: IndexedStack(index: _currentIndex, children: _screens),
+
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _currentIndex,
+
+          onDestinationSelected: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.notifications),
+              selectedIcon: Icon(Icons.notifications),
+              label: 'Notifications',
+            ),
+
+            NavigationDestination(
+              icon: Icon(Icons.home),
+              selectedIcon: Icon(Icons.home),
+              label: 'Home',
+            ),
+
+            NavigationDestination(
+              icon: Icon(Icons.notifications),
+              selectedIcon: Icon(Icons.notifications),
+              label: 'Learn',
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -88,52 +120,55 @@ class LearnNotification extends StatefulWidget {
 class _LearnNotificationState extends State<LearnNotification> {
   bool isNotificationEnabled = false;
   bool isScheduledNotificationEnabled = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
-        title: Text(
+
+        title: const Text(
           'Flutter Notifications',
           style: TextStyle(color: Colors.white),
         ),
+
         centerTitle: true,
+
         leading: const Icon(Icons.notifications, color: Colors.white),
       ),
+
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
+
               children: [
                 SizedBox(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
 
                     children: [
-                      IconButton(
-                        onPressed: () {},
-                        icon: Icon(Icons.notifications),
+                      const Icon(
+                        Icons.notifications,
                         color: Colors.blue,
-                        iconSize: 32,
-                        // splashRadius: 50,
+                        size: 32,
                       ),
+
                       TextButton(
                         onPressed: () {
                           LocalNotificationServices.showNotification();
                         },
-                        style: ButtonStyle(
+
+                        style: const ButtonStyle(
                           backgroundColor: WidgetStatePropertyAll(
                             Colors.amberAccent,
                           ),
-                          shape: WidgetStatePropertyAll(
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
                         ),
-                        child: Text(
+
+                        child: const Text(
                           'Local Notification',
                           style: TextStyle(color: Colors.blue),
                         ),
@@ -146,31 +181,40 @@ class _LearnNotificationState extends State<LearnNotification> {
                   onPressed: () {
                     LocalNotificationServices.cancelNotification(0);
                   },
-                  icon: Icon(Icons.cancel),
+
+                  icon: const Icon(Icons.cancel),
+
                   color: Colors.red,
+
                   iconSize: 26,
                 ),
               ],
             ),
-            SizedBox(height: 20),
+
+            const SizedBox(height: 20),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
+
               children: [
-                Expanded(
+                const Expanded(
                   flex: 1,
-                  child: IconButton(
-                    onPressed: () {},
-                    icon: Icon(Icons.notifications),
+
+                  child: Icon(
+                    Icons.notifications,
                     color: Colors.blue,
-                    iconSize: 32,
-                    // splashRadius: 50,
+                    size: 32,
                   ),
                 ),
+
                 Expanded(
                   flex: 3,
+
                   child: CheckboxListTile(
                     title: const Text("تفعيل الصلاة على النبي ﷺ"),
+
                     value: isNotificationEnabled,
+
                     onChanged: (value) {
                       setState(() {
                         isNotificationEnabled = value!;
@@ -186,25 +230,31 @@ class _LearnNotificationState extends State<LearnNotification> {
                 ),
               ],
             ),
-            SizedBox(height: 20),
+
+            const SizedBox(height: 20),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
+
               children: [
-                Expanded(
+                const Expanded(
                   flex: 1,
-                  child: IconButton(
-                    onPressed: () {},
-                    icon: Icon(Icons.notifications),
+
+                  child: Icon(
+                    Icons.notifications,
                     color: Colors.blue,
-                    iconSize: 32,
-                    // splashRadius: 50,
+                    size: 32,
                   ),
                 ),
+
                 Expanded(
                   flex: 3,
+
                   child: CheckboxListTile(
                     title: const Text("Scheduled Notification"),
+
                     value: isScheduledNotificationEnabled,
+
                     onChanged: (value) {
                       setState(() {
                         isScheduledNotificationEnabled = value!;
@@ -220,12 +270,15 @@ class _LearnNotificationState extends State<LearnNotification> {
                 ),
               ],
             ),
-            SizedBox(height: 20),
+
+            const SizedBox(height: 20),
+
             ElevatedButton(
               onPressed: () {
                 LocalNotificationServices.cancelAllNotifications();
               },
-              child: Text('Cancel All'),
+
+              child: const Text('Cancel All'),
             ),
           ],
         ),

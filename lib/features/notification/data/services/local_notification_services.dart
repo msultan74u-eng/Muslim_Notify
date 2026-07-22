@@ -5,6 +5,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import '../constant/notification_ids.dart';
+import '../enum/prayer_type.dart';
 import 'adhan_services/prayer_service.dart';
 import 'timezone_service.dart';
 
@@ -23,24 +24,54 @@ class LocalNotificationServices {
   }
 
   /// for initialize in main.dart
+  // static Future<void> init() async {
+  //   await TimezoneService.initialize();
+  //   InitializationSettings settings = InitializationSettings(
+  //     android: AndroidInitializationSettings("@mipmap/ic_launcher"),
+  //
+  //     iOS: DarwinInitializationSettings(),
+  //   );
+  //   await flutterLocalNotificationsPlugin.initialize(
+  //     settings: settings,
+  //     onDidReceiveNotificationResponse: onTap,
+  //     onDidReceiveBackgroundNotificationResponse: onTap,
+  //   );
+  // }
+
   static Future<void> init() async {
     await TimezoneService.initialize();
-    InitializationSettings settings = InitializationSettings(
-      android: AndroidInitializationSettings("@mipmap/ic_launcher"),
 
+    const settings = InitializationSettings(
+      android: AndroidInitializationSettings("@mipmap/ic_launcher"),
       iOS: DarwinInitializationSettings(),
     );
+
     await flutterLocalNotificationsPlugin.initialize(
       settings: settings,
       onDidReceiveNotificationResponse: onTap,
       onDidReceiveBackgroundNotificationResponse: onTap,
     );
-  }
 
+    // إذا تم تشغيل التطبيق من خلال الإشعار
+    final launchDetails = await flutterLocalNotificationsPlugin
+        .getNotificationAppLaunchDetails();
+
+    if (launchDetails?.didNotificationLaunchApp ?? false) {
+      final response = launchDetails?.notificationResponse;
+
+      if (response != null) {
+        Future.delayed(const Duration(milliseconds: 500), () {
+          streamController.add(response);
+        });
+      }
+    }
+  }
 
   static Future<bool> requestPermissions() async {
     final androidPlugin = flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
 
     if (androidPlugin == null) return true;
 
@@ -600,6 +631,18 @@ class LocalNotificationServices {
     await flutterLocalNotificationsPlugin.cancelAll();
   }
 
+  static Future<void> cancelPrayerReminders() async {
+    for (final prayer in PrayerType.values) {
+      await cancelNotification(NotificationIds.prayerReminderId(prayer));
+    }
+  }
+
+  static Future<void> cancelPrayerAdhans() async {
+    for (final prayer in PrayerType.values) {
+      await cancelNotification(NotificationIds.prayerAdhanId(prayer));
+    }
+  }
+
   // Cancel all Prophet prayer notification
   static Future<void> cancelAllProphetPrayerNotifications() async {
     log('🗑️ Cancelling all Prophet Prayer notifications...');
@@ -659,6 +702,124 @@ class LocalNotificationServices {
       currentTime.day,
       nextHour,
       nextMinute,
+    );
+  }
+
+  ///    it`s for adhan prayer notification
+
+  // 1- Public function Adhan Notification
+  static Future<void> scheduleAdhanNotification({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledDate,
+    String? soundName,
+    String? payload,
+  }) async {
+    log('📢 scheduleAdhanNotification() CALLED');
+
+    final selectedSound = soundName ?? 'the_best_human';
+
+    final channelId = 'prayer_adhan_$selectedSound';
+
+    final tzDate = tz.TZDateTime.from(scheduledDate, tz.local);
+
+    log('🆔 ID: $id');
+    log('📝 Title: $title');
+    log('📦 Payload: $payload');
+    log('🔊 Sound: $selectedSound');
+    log('📺 Channel: $channelId');
+    log('🕒 Original Date: $scheduledDate');
+    log('🕒 TZ Date: $tzDate');
+    log('🌍 TZ Location: ${tz.local.name}');
+
+    final notificationDetails = NotificationDetails(
+      android: AndroidNotificationDetails(
+        channelId,
+        'Prayer Adhan Notifications',
+        channelDescription: 'Notifications for prayer times and Adhan',
+
+        importance: Importance.max,
+        priority: Priority.max,
+
+        category: AndroidNotificationCategory.alarm,
+
+        // إظهار كامل الشاشة
+        fullScreenIntent: true,
+
+        visibility: NotificationVisibility.public,
+
+        // الصوت
+        playSound: true,
+        sound: RawResourceAndroidNotificationSound(selectedSound),
+
+        autoCancel: false,
+        ongoing: true,
+
+        // مهم للأذان
+        timeoutAfter: null,
+
+        enableVibration: true,
+      ),
+
+      iOS: const DarwinNotificationDetails(),
+    );
+
+    try {
+      await flutterLocalNotificationsPlugin.zonedSchedule(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: tzDate,
+        notificationDetails: notificationDetails,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        payload: payload,
+      );
+
+      log(
+        '✅ Adhan notification scheduled successfully '
+        'ID:$id',
+      );
+    } catch (e, stack) {
+      log('❌ Failed scheduling Adhan: $e');
+      log(stack.toString());
+    }
+  }
+
+  // 2- schedulePrayerReminderNotification
+  static Future<void> schedulePrayerReminderNotification({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledDate,
+    String? soundName,
+    String? payload,
+  }) async {
+    final selectedSound = soundName ?? 'the_best_human';
+
+    final channelId = 'prayer_reminder_$selectedSound';
+
+    final notificationDetails = NotificationDetails(
+      android: AndroidNotificationDetails(
+        channelId,
+        'Prayer Reminder Notifications',
+        channelDescription: 'Notifications before prayer times',
+        importance: Importance.max,
+        priority: Priority.max,
+        playSound: true,
+        sound: RawResourceAndroidNotificationSound(selectedSound),
+      ),
+      iOS: const DarwinNotificationDetails(),
+    );
+
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: tz.TZDateTime.from(scheduledDate, tz.local),
+      notificationDetails: notificationDetails,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      payload: payload,
     );
   }
 

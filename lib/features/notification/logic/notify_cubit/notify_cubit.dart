@@ -4,6 +4,7 @@ import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/enum/notification_type.dart';
+import '../../data/enum/prayer_type.dart';
 import '../../data/services/notify_manager.dart';
 
 part 'notify_state.dart';
@@ -116,12 +117,52 @@ class NotifyCubit extends HydratedCubit<NotifyState> {
     }
   }
 
+  // 6- Prayer Reminder notification
+  Future<void> _updatePrayerReminderNotification(bool enabled) async {
+    if (enabled) {
+      await _notifyManager.enableNotifications(NotificationType.prayerReminder);
+    } else {
+      await _notifyManager.disableNotifications(
+        NotificationType.prayerReminder,
+      );
+    }
+  }
+
+  // 7- Prayer Adhan notification
+  Future<void> _updatePrayerAdhanNotification() async {
+    // cancel prayer adhan notifications
+    await _notifyManager.disableNotifications(NotificationType.prayerAdhan);
+
+    // verify prayer adhan states and enable at least one prayer adhan
+    final hasAnyEnabled =
+        state.fajrAdhanEnabled ||
+        state.dhuhrAdhanEnabled ||
+        state.asrAdhanEnabled ||
+        state.maghribAdhanEnabled ||
+        state.ishaAdhanEnabled;
+
+    // if no prayer adhan is enabled, return
+    if (!hasAnyEnabled) {
+      return;
+    }
+
+    // reschedule prayer adhan
+    await _notifyManager.enableNotifications(
+      NotificationType.prayerAdhan,
+      fajrAdhanEnabled: state.fajrAdhanEnabled,
+      dhuhrAdhanEnabled: state.dhuhrAdhanEnabled,
+      asrAdhanEnabled: state.asrAdhanEnabled,
+      maghribAdhanEnabled: state.maghribAdhanEnabled,
+      ishaAdhanEnabled: state.ishaAdhanEnabled,
+    );
+  }
+
   /// * Toggle methode of notify
   // 1- Prophet Salawat notification
   Future<void> toggleProphetSalawat(bool enabled) async {
     emit(state.copyWith(salawatEnabled: enabled));
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('salawat_enabled', enabled); // ← سطر جديد
+    await prefs.setBool('salawat_enabled', enabled);
     await _updateProphetSalawatNotification(enabled);
   }
 
@@ -147,6 +188,59 @@ class NotifyCubit extends HydratedCubit<NotifyState> {
   Future<void> toggleNightPrayer(bool enabled) async {
     emit(state.copyWith(nightPrayerEnabled: enabled));
     await _updateNightPrayerNotification(enabled);
+  }
+
+  // 6- Prayer Reminder notification
+  Future<void> togglePrayerReminder(bool enabled) async {
+    emit(state.copyWith(prayerReminderEnable: enabled));
+
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setBool('prayer_reminder_enabled', enabled);
+
+    await _updatePrayerReminderNotification(enabled);
+  }
+
+  // 7- Prayer Adhan notification
+  Future<void> togglePrayerAdhanByType(PrayerType prayer, bool enabled) async {
+    // update  prayer state
+    switch (prayer) {
+      case PrayerType.fajr:
+        emit(state.copyWith(fajrAdhanEnabled: enabled));
+        break;
+
+      case PrayerType.dhuhr:
+        emit(state.copyWith(dhuhrAdhanEnabled: enabled));
+        break;
+
+      case PrayerType.asr:
+        emit(state.copyWith(asrAdhanEnabled: enabled));
+        break;
+
+      case PrayerType.maghrib:
+        emit(state.copyWith(maghribAdhanEnabled: enabled));
+        break;
+
+      case PrayerType.isha:
+        emit(state.copyWith(ishaAdhanEnabled: enabled));
+        break;
+    }
+
+    // save states in shared preferences
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setBool('fajr_adhan_enabled', state.fajrAdhanEnabled);
+
+    await prefs.setBool('dhuhr_adhan_enabled', state.dhuhrAdhanEnabled);
+
+    await prefs.setBool('asr_adhan_enabled', state.asrAdhanEnabled);
+
+    await prefs.setBool('maghrib_adhan_enabled', state.maghribAdhanEnabled);
+
+    await prefs.setBool('isha_adhan_enabled', state.ishaAdhanEnabled);
+
+    // reschedule prayer adhan
+    await _updatePrayerAdhanNotification();
   }
 
   ///
@@ -187,21 +281,52 @@ class NotifyCubit extends HydratedCubit<NotifyState> {
     log('🔄 Refreshing location-based notifications...');
 
     try {
+      final prefs = await SharedPreferences.getInstance();
+
+      // حفظ حالة Prayer Reminder لاستخدامها في WorkManager
+      await prefs.setBool(
+        'prayer_reminder_enabled',
+        state.prayerReminderEnable,
+      );
+
+      // save prayer adhan states in shared preferences
+      await prefs.setBool('fajr_adhan_enabled', state.fajrAdhanEnabled);
+
+      await prefs.setBool('dhuhr_adhan_enabled', state.dhuhrAdhanEnabled);
+
+      await prefs.setBool('asr_adhan_enabled', state.asrAdhanEnabled);
+
+      await prefs.setBool('maghrib_adhan_enabled', state.maghribAdhanEnabled);
+
+      await prefs.setBool('isha_adhan_enabled', state.ishaAdhanEnabled);
+
+      // 1- azkarSabah
       if (state.azkarSabahEnabled) {
         await _updateAzkarSabahNotification(true);
       }
 
+      // 2- azkarAlmasaa
       if (state.azkarAlmasaaEnabled) {
         await _updateAzkarAlmasaaNotification(true);
       }
 
+      // 3- azkarAlnawm
       if (state.azkarAlnawmEnabled) {
         await _updateAzkarAlnawmNotification(true);
       }
 
+      // 4- Night Prayer
       if (state.nightPrayerEnabled) {
         await _updateNightPrayerNotification(true);
       }
+
+      // 5- Prayer Reminder
+      if (state.prayerReminderEnable) {
+        await _updatePrayerReminderNotification(true);
+      }
+
+      // 6- Prayer Adhan
+      await _updatePrayerAdhanNotification();
 
       return true;
     } catch (e, s) {

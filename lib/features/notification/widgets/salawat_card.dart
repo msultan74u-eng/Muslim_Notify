@@ -5,7 +5,7 @@ import 'package:muslim_notify/features/notification/widgets/switch_row.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/utils/app_functions.dart';
 import '../../../generated/l10n.dart';
-import '../logic/cubits/notify_cubit.dart';
+import '../logic/notify_cubit/notify_cubit.dart';
 
 class SalawatCard extends StatefulWidget {
   const SalawatCard({super.key});

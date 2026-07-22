@@ -1,10 +1,15 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:geocoding/geocoding.dart';
 
 class LocationService {
   // SharedPreferences Keys
   static const String _latitudeKey = 'last_latitude';
   static const String _longitudeKey = 'last_longitude';
+  static const String _locationNameKey = 'last_location_name';
+
+  // instance for geocoding
+  static final Geocoding _geocoding = Geocoding();
 
   // Location Service
   /// Check if device location service is enabled
@@ -148,5 +153,59 @@ class LocationService {
 
       rethrow;
     }
+  }
+
+  /// Get location name from coordinates
+  static Future<String?> getLocationName(
+    double latitude,
+    double longitude,
+  ) async {
+    try {
+      final placemarks = await _geocoding.placemarkFromCoordinates(
+        latitude,
+        longitude,
+      );
+
+      if (placemarks.isEmpty) {
+        return null;
+      }
+
+      final placemark = placemarks.first;
+
+      final parts = <String>[
+        if (placemark.locality != null && placemark.locality!.isNotEmpty)
+          placemark.locality!,
+        if (placemark.country != null && placemark.country!.isNotEmpty)
+          placemark.country!,
+      ];
+
+      return parts.isEmpty ? null : parts.join('، ');
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Get location name from cached coordinates
+  static Future<String?> getLocationNameCached(
+    double latitude,
+    double longitude,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final cachedLat = prefs.getDouble(_latitudeKey);
+    final cachedLng = prefs.getDouble(_longitudeKey);
+    final cachedName = prefs.getString(_locationNameKey);
+
+    if (cachedLat == latitude && cachedLng == longitude && cachedName != null) {
+      return cachedName;
+    }
+
+    final name = await getLocationName(latitude, longitude);
+
+    if (name != null) {
+      await prefs.setString(_locationNameKey, name);
+    }
+
+    return name;
   }
 }

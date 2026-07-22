@@ -162,4 +162,16 @@ class PrayerService {
   static Duration _divideDuration(Duration duration, int divisor) {
     return Duration(milliseconds: duration.inMilliseconds ~/ divisor);
   }
+
+  static List<(PrayerType, DateTime)> getAllPrayers(
+    PrayerTimesModel prayerTimes,
+  ) {
+    return [
+      (PrayerType.fajr, prayerTimes.fajr),
+      (PrayerType.dhuhr, prayerTimes.dhuhr),
+      (PrayerType.asr, prayerTimes.asr),
+      (PrayerType.maghrib, prayerTimes.maghrib),
+      (PrayerType.isha, prayerTimes.isha),
+    ];
+  }
 }

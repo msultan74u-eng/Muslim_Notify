@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:muslim_notify/features/notification/widgets/switch_row.dart';
 
 import '../../../core/themes/app_colors.dart';
 import '../../../core/utils/app_functions.dart';
 import '../../../generated/l10n.dart';
 import '../data/enum/prayer_type.dart';
+import '../data/models/prayer_times_model.dart';
+import '../logic/notify_cubit/notify_cubit.dart';
+import '../logic/prayer_times_cubit/prayer_times_cubit.dart';
+import '../logic/prayer_times_cubit/prayer_times_state.dart';
+import 'adhan/card_shell.dart';
+import 'adhan/loading_card.dart';
+import 'adhan/prayer_row.dart';
 
-
+/// Card that lists the 5 daily prayers, their times, and per-prayer
+/// Adhan notification toggles.
 class AdhanCard extends StatefulWidget {
   const AdhanCard({super.key});
 
@@ -15,164 +24,156 @@ class AdhanCard extends StatefulWidget {
 }
 
 class _AdhanCardState extends State<AdhanCard> {
-  final Map<PrayerType, bool> _adhanEnabled = {
-    PrayerType.fajr: true,
-    PrayerType.dhuhr: true,
-    PrayerType.asr: true,
-    PrayerType.maghrib: true,
-    PrayerType.isha: true,
-  };
-  late PrayerType _expandedPrayer = PrayerType.fajr;
+  PrayerType? _expandedPrayer = PrayerType.fajr;
 
-  String prayerTitle(BuildContext context, PrayerType prayer) {
-    switch (prayer) {
-      case PrayerType.fajr:
-        return S.of(context).fajr;
-      case PrayerType.dhuhr:
-        return S.of(context).dhuhr;
-      case PrayerType.asr:
-        return S.of(context).asr;
-      case PrayerType.maghrib:
-        return S.of(context).maghrib;
-      case PrayerType.isha:
-        return S.of(context).ishaa;
-    }
+  void _setExpanded(PrayerType prayer, bool expand) {
+    setState(() => _expandedPrayer = expand ? prayer : null);
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
+
+    final prayerTimesState = context.watch<PrayerTimesCubit>().state;
+
+    return switch (prayerTimesState) {
+      PrayerTimesInitial() ||
+      PrayerTimesLoading() => LoadingCard(isDark: isDark, height: 180),
+      PrayerTimesError(:final message) => _ErrorCard(
+        isDark: isDark,
+        message: message,
+      ),
+      PrayerTimesLoaded(:final prayerTimes) => Stack(
+        clipBehavior: Clip.none,
+        children: [
+          CardShell(
+            isDark: isDark,
+            child: Column(
+              children: [
+                for (final prayer in PrayerType.values)
+                  PrayerRow(
+                    key: ValueKey(prayer),
+                    prayer: prayer,
+                    time: _prayerTime(prayerTimes, prayer),
+                    isExpanded: _expandedPrayer == prayer,
+                    isLast: prayer == PrayerType.values.last,
+                    onExpandToggle: (expand) => _setExpanded(prayer, expand),
+                  ),
+              ],
+            ),
+          ),
+          if (prayerTimes.locationName != null &&
+              prayerTimes.locationName!.isNotEmpty)
+            Positioned(
+              top: -12,
+              right: 16,
+              child: _LocationBadge(
+                locationName: prayerTimes.locationName!,
+                isDark: isDark,
+              ),
+            ),
+        ],
+      ),
+    };
+  }
+
+  static DateTime _prayerTime(PrayerTimesModel times, PrayerType prayer) {
+    return switch (prayer) {
+      PrayerType.fajr => times.fajr,
+      PrayerType.dhuhr => times.dhuhr,
+      PrayerType.asr => times.asr,
+      PrayerType.maghrib => times.maghrib,
+      PrayerType.isha => times.isha,
+    };
+  }
+}
+
+class _LocationBadge extends StatelessWidget {
+  final String locationName;
+  final bool isDark;
+
+  const _LocationBadge({required this.locationName, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.grey_800 : AppColors.primary_0,
-        borderRadius: BorderRadius.circular(16),
+        color: isDark ? Colors.grey[850] : Colors.white,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Column(
-        children: _adhanEnabled.keys.map((prayer) {
-          final isLast = prayer == _adhanEnabled.keys.last;
-          final enabled = _adhanEnabled[prayer]!;
-          final expanded = _expandedPrayer == prayer;
-
-          return Column(
-            children: [
-              InkWell(
-                onTap: () {
-                  setState(() {
-                    _expandedPrayer = (expanded ? null : prayer)!;
-                  });
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: enabled ? AppColors.warning_100 : null,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              prayerTitle(context, prayer),
-                              style: const TextStyle(
-                                fontSize: 14.5,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              enabled
-                                  ? S.of(context).haramAzan
-                                  : 'الإشعار متوقف',
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                color: enabled ? null : Colors.grey.shade400,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      AnimatedRotation(
-                        turns: expanded ? 0.5 : 0,
-                        duration: const Duration(milliseconds: 200),
-                        child: Icon(
-                          Icons.keyboard_arrow_down_rounded,
-                          // color: AppColors.grey_50,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Transform.scale(
-                        scale: 0.85,
-                        child: Switch(
-                          value: enabled,
-                          activeThumbColor: AppColors.primary_300,
-                          onChanged: (v) {},
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              AnimatedCrossFade(
-                firstChild: const SizedBox(width: double.infinity),
-                secondChild: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  child: Column(
-                    children: [
-                      _dropdownRow(
-                        label: S.of(context).adhanVoice,
-                        value: S.of(context).haramAzan,
-                      ),
-                      const SizedBox(height: 10),
-                      SwitchRow(
-                        label: S.of(context).rememberAzam,
-                        value: false,
-                        onChanged: (_) {},
-                      ),
-                    ],
-                  ),
-                ),
-                crossFadeState: (expanded && enabled)
-                    ? CrossFadeState.showSecond
-                    : CrossFadeState.showFirst,
-                duration: const Duration(milliseconds: 200),
-              ),
-              if (!isLast) const Divider(height: 1, indent: 16, endIndent: 16),
-            ],
-          );
-        }).toList(),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.location_on,
+            size: 14,
+            color: isDark ? Colors.white70 : Colors.grey[700],
+          ),
+          const SizedBox(width: 4),
+          Text(
+            locationName,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: isDark ? Colors.white70 : Colors.grey[700],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-Widget _dropdownRow({required String label, required String value}) {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-    decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
-    child: Row(
-      children: [
-        Icon(Icons.graphic_eq_rounded, size: 18),
-        const SizedBox(width: 8),
-        Expanded(child: Text(value, style: const TextStyle(fontSize: 13))),
-        const Icon(Icons.expand_more_rounded, size: 18),
-      ],
-    ),
-  );
+/// Shared card chrome (background, radius, shadow) used by all states.
+
+class _ErrorCard extends StatelessWidget {
+  const _ErrorCard({required this.isDark, required this.message});
+
+  final bool isDark;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return CardShell(
+      isDark: isDark,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.error_outline_rounded,
+              size: 36,
+              color: Colors.redAccent,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'تعذر الحصول على مواقيت الصلاة',
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () =>
+                  context.read<PrayerTimesCubit>().getTodayPrayerTimes(),
+              child: const Text('إعادة المحاولة'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

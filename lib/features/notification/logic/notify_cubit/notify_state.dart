@@ -27,27 +27,57 @@ class NotifyState {
   final bool nightPrayerEnabled;
   final DateTime? nightPrayerTime;
 
+  /// 6- Prayer Reminder notification
+  final bool prayerReminderEnable;
+
+  /// 7- Prayer Adhan notification
+  // 1- Fajr Adhan
+  final bool fajrAdhanEnabled;
+  // 2- Dhuhr Adhan
+  final bool dhuhrAdhanEnabled;
+  // 3- Asr Adhan
+  final bool asrAdhanEnabled;
+  // 4- Maghrib Adhan
+  final bool maghribAdhanEnabled;
+  // 5- Isha Adhan
+  final bool ishaAdhanEnabled;
+
   const NotifyState({
-    // 1
+    /// 1
     required this.salawatEnabled,
     required this.salawatIntervalIndex,
     required this.fridayBoost,
 
-    // 2
+    /// 2
     required this.azkarSabahEnabled,
     required this.azkarSabahTime,
 
-    // 3
+    /// 3
     required this.azkarAlmasaaEnabled,
     required this.azkarAlmasaaTime,
 
-    // 4
+    /// 4
     required this.azkarAlnawmEnabled,
     required this.azkarAlnawmTime,
 
-    // 5
+    /// 5
     required this.nightPrayerEnabled,
     required this.nightPrayerTime,
+
+    /// 6
+    required this.prayerReminderEnable,
+
+    /// 7
+    // 1- Fajr Adhan
+    required this.fajrAdhanEnabled,
+    // 2- Dhuhr Adhan
+    required this.dhuhrAdhanEnabled,
+    // 3- Asr Adhan
+    required this.asrAdhanEnabled,
+    // 4- Maghrib Adhan
+    required this.maghribAdhanEnabled,
+    // 5- Isha Adhan
+    required this.ishaAdhanEnabled,
   });
 
   factory NotifyState.initial() {
@@ -72,6 +102,16 @@ class NotifyState {
       // 5
       nightPrayerEnabled: true,
       nightPrayerTime: null,
+
+      // 6
+      prayerReminderEnable: true,
+
+      // 7
+      fajrAdhanEnabled: true,
+      dhuhrAdhanEnabled: true,
+      asrAdhanEnabled: true,
+      maghribAdhanEnabled: true,
+      ishaAdhanEnabled: true,
     );
   }
 
@@ -96,6 +136,16 @@ class NotifyState {
     // 5
     bool? nightPrayerEnabled,
     Object? nightPrayerTime = _unset,
+
+    // 6
+    bool? prayerReminderEnable,
+
+    // 7
+    bool? fajrAdhanEnabled,
+    bool? dhuhrAdhanEnabled,
+    bool? asrAdhanEnabled,
+    bool? maghribAdhanEnabled,
+    bool? ishaAdhanEnabled,
   }) {
     return NotifyState(
       // 1
@@ -126,6 +176,16 @@ class NotifyState {
       nightPrayerTime: nightPrayerTime == _unset
           ? this.nightPrayerTime
           : nightPrayerTime as DateTime?,
+
+      // 6
+      prayerReminderEnable: prayerReminderEnable ?? this.prayerReminderEnable,
+
+      // 7
+      fajrAdhanEnabled: fajrAdhanEnabled ?? this.fajrAdhanEnabled,
+      dhuhrAdhanEnabled: dhuhrAdhanEnabled ?? this.dhuhrAdhanEnabled,
+      asrAdhanEnabled: asrAdhanEnabled ?? this.asrAdhanEnabled,
+      maghribAdhanEnabled: maghribAdhanEnabled ?? this.maghribAdhanEnabled,
+      ishaAdhanEnabled: ishaAdhanEnabled ?? this.ishaAdhanEnabled,
     );
   }
 
@@ -151,6 +211,16 @@ class NotifyState {
       // 5
       'nightPrayerEnabled': nightPrayerEnabled,
       'nightPrayerTime': nightPrayerTime?.toIso8601String(),
+
+      // 6
+      'prayerReminderEnable': prayerReminderEnable,
+
+      // 7
+      'fajrAdhanEnabled': fajrAdhanEnabled,
+      'dhuhrAdhanEnabled': dhuhrAdhanEnabled,
+      'asrAdhanEnabled': asrAdhanEnabled,
+      'maghribAdhanEnabled': maghribAdhanEnabled,
+      'ishaAdhanEnabled': ishaAdhanEnabled,
     };
   }
 
@@ -184,6 +254,16 @@ class NotifyState {
       nightPrayerTime: map['nightPrayerTime'] != null
           ? DateTime.parse(map['nightPrayerTime'])
           : null,
+
+      // 6
+      prayerReminderEnable: map['prayerReminderEnable'] ?? true,
+
+      // 7
+      fajrAdhanEnabled: map['fajrAdhanEnabled'] ?? true,
+      dhuhrAdhanEnabled: map['dhuhrAdhanEnabled'] ?? true,
+      asrAdhanEnabled: map['asrAdhanEnabled'] ?? true,
+      maghribAdhanEnabled: map['maghribAdhanEnabled'] ?? true,
+      ishaAdhanEnabled: map['ishaAdhanEnabled'] ?? true,
     );
   }
 }

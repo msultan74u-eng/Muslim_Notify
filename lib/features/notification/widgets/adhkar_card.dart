@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/utils/app_functions.dart';
 import '../../../generated/l10n.dart';
-import '../logic/cubits/notify_cubit.dart';
+import '../logic/notify_cubit/notify_cubit.dart';
 
 class AdhkarCard extends StatelessWidget {
   const AdhkarCard({super.key});
