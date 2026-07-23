@@ -3,13 +3,23 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../bottom_nav_page.dart';
+import '../../nav_bar/bottom_nav_page.dart';
 import '../../../core/utils/app_functions.dart';
 import '../../../generated/l10n.dart';
 import '../data/services/adhan_services/location_service.dart';
 import '../data/services/timezone_service.dart';
 import '../logic/notify_cubit/notify_cubit.dart';
 import 'adhan/loading_card.dart';
+
+/// نتيجة فحص _shouldRefresh: بترجع القرار + الـ Position اللي اتجابت
+/// أثناء الفحص (لو اتجابت)، عشان نعيد استخدامها في الـ flow الرئيسي
+/// بدل ما نطلب GPS تاني (توفير وقت + بطارية).
+class _RefreshCheckResult {
+  final bool shouldRefresh;
+  final Position? cachedPosition;
+
+  const _RefreshCheckResult(this.shouldRefresh, this.cachedPosition);
+}
 
 class NotificationInitializer extends StatefulWidget {
   const NotificationInitializer({super.key});
@@ -50,6 +60,12 @@ class _NotificationInitializerState extends State<NotificationInitializer>
 
     WidgetsBinding.instance.addObserver(this);
 
+    // تحسين UX: لو عندنا موقع محفوظ من قبل، نظهر الشاشة الرئيسية
+    // فورًا من غير ما ننتظر كل فحوصات الـ refresh (يوم جديد / مسافة /
+    // فاصل زمني). أي refresh فعلي هيحصل بعد كده في الخلفية من غير
+    // ما يعطل عرض الشاشة.
+    _checkInitialLocationReadiness();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeNotifications();
     });
@@ -68,6 +84,19 @@ class _NotificationInitializerState extends State<NotificationInitializer>
     }
   }
 
+  /// فحص سريع (بدون أي عمليات ثقيلة زي GPS) لتحديد هل نقدر نعرض
+  /// الشاشة الرئيسية فورًا وقت الإقلاع، وذلك لو عندنا موقع محفوظ
+  /// بالفعل من نداء سابق.
+  Future<void> _checkInitialLocationReadiness() async {
+    final hasSavedLocation = await LocationService.hasSavedLocation();
+
+    if (hasSavedLocation && mounted && !_locationReady) {
+      setState(() {
+        _locationReady = true;
+      });
+    }
+  }
+
   Future<void> _initializeNotifications() async {
     if (!mounted || _isInitializing) {
       return;
@@ -77,12 +106,13 @@ class _NotificationInitializerState extends State<NotificationInitializer>
     // وقت الـ cold start لما initState و didChangeAppLifecycleState(resumed)
     // يتنفذوا مع بعض تقريبًا). التسجيل هنا synchronous، فمفيش فرصة لـ
     // race condition زي اللي كانت بتحصل مع _isInitializing لوحده.
-    final now = DateTime.now();
-    if (_lastRunTime != null && now.difference(_lastRunTime!) < _minCallGap) {
+    final currentTime = DateTime.now();
+    if (_lastRunTime != null &&
+        currentTime.difference(_lastRunTime!) < _minCallGap) {
       debugPrint('⏭️ Skipping duplicate initialization call (too soon)');
       return;
     }
-    _lastRunTime = now;
+    _lastRunTime = currentTime;
 
     _isInitializing = true;
 
@@ -94,9 +124,14 @@ class _NotificationInitializerState extends State<NotificationInitializer>
       // شروط الـ throttle (3 ساعات / تغيير الموقع)
       final isNewDay = await _isNewDay();
 
+      // فحص هل محتاجين refresh فعلي، وبيرجع كمان الـ Position لو
+      // اتجابت أثناء فحص المسافة، عشان نعيد استخدامها تحت من غير ما
+      // نطلب GPS مرة تانية.
+      final refreshCheck = await _shouldRefresh();
+
       // لو مش أول مرة، ومش يوم جديد، وفحصنا ولقينا مفيش داعي لـ refresh،
       // منعملش حاجة
-      if (_locationReady && !isNewDay && !await _shouldRefresh()) {
+      if (_locationReady && !isNewDay && !refreshCheck.shouldRefresh) {
         return;
       }
 
@@ -107,7 +142,11 @@ class _NotificationInitializerState extends State<NotificationInitializer>
       // Try to get the current location
       if (isLocationEnabled) {
         try {
-          final position = await LocationService.getCurrentPosition();
+          // لو عندنا Position اتجابت بالفعل من _shouldRefresh نستخدمها،
+          // وإلا نطلبها من جديد (أول مرة، أو لو مفيش last lat/lng محفوظة)
+          final position =
+              refreshCheck.cachedPosition ??
+              await LocationService.getCurrentPosition();
 
           await LocationService.saveLastLocation(position);
 
@@ -115,7 +154,7 @@ class _NotificationInitializerState extends State<NotificationInitializer>
 
           await _saveRefreshMarker(position);
 
-          if (mounted) {
+          if (mounted && !_locationReady) {
             setState(() {
               _locationReady = true;
             });
@@ -133,7 +172,7 @@ class _NotificationInitializerState extends State<NotificationInitializer>
 
         await _saveRefreshMarker(null);
 
-        if (mounted) {
+        if (mounted && !_locationReady) {
           setState(() {
             _locationReady = true;
           });
@@ -145,7 +184,7 @@ class _NotificationInitializerState extends State<NotificationInitializer>
       // No current location and no saved location
       // نعتبر الجدولة اتظبطت (بالـ default) عشان مانعلقش على شاشة اللودينج
       // للأبد لو المستخدم قفل الـ dialog من غير ما يفعّل الموقع
-      if (mounted) {
+      if (mounted && !_locationReady) {
         setState(() {
           _locationReady = true;
         });
@@ -184,13 +223,17 @@ class _NotificationInitializerState extends State<NotificationInitializer>
   /// يحدد هل محتاجين فعلياً نعمل refresh كامل (GPS + إعادة جدولة) ولا لأ
   /// ملحوظة: فحص "يوم جديد" اتفصل بره الدالة دي (_isNewDay) عشان
   /// يتفحص بشكل مستقل وميتأثرش بباقي الشروط
-  Future<bool> _shouldRefresh() async {
+  ///
+  /// بترجع _RefreshCheckResult بدل bool عادي، عشان لو طلبنا GPS هنا
+  /// (لقياس المسافة) نقدر نعيد استخدام نفس الـ Position تحت في
+  /// _initializeNotifications من غير ما نطلبها تاني.
+  Future<_RefreshCheckResult> _shouldRefresh() async {
     final prefs = await SharedPreferences.getInstance();
 
     // عدّى وقت كافي من آخر refresh؟
     final lastRefreshMillis = prefs.getInt('last_refresh_timestamp');
     if (lastRefreshMillis == null) {
-      return true; // مفيش سجل قبل كده
+      return const _RefreshCheckResult(true, null); // مفيش سجل قبل كده
     }
     final lastRefreshTime = DateTime.fromMillisecondsSinceEpoch(
       lastRefreshMillis,
@@ -198,7 +241,7 @@ class _NotificationInitializerState extends State<NotificationInitializer>
     final now = TimezoneService.currentTime();
     if (now.difference(lastRefreshTime) >= _minRefreshInterval) {
       debugPrint('🔄 Refresh interval elapsed → refresh needed');
-      return true;
+      return const _RefreshCheckResult(true, null);
     }
 
     // الموقع اتغيّر بشكل ملحوظ؟
@@ -219,7 +262,9 @@ class _NotificationInitializerState extends State<NotificationInitializer>
           debugPrint(
             '🔄 Location changed significantly ($distance m) → refresh needed',
           );
-          return true;
+          // بنرجّع الـ Position اللي جبناها هنا عشان نعيد استخدامها
+          // تحت ونوفر نداء GPS تاني.
+          return _RefreshCheckResult(true, currentPosition);
         }
       } catch (_) {
         // لو فشل الحصول على الموقع الحالي هنا، منعملش refresh بالغلط
@@ -228,7 +273,7 @@ class _NotificationInitializerState extends State<NotificationInitializer>
     }
 
     debugPrint('⏭️ No refresh needed — using cached schedule');
-    return false;
+    return const _RefreshCheckResult(false, null);
   }
 
   /// يحفظ وقت وموقع آخر refresh فعلي

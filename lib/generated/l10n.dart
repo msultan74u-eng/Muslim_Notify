@@ -438,6 +438,26 @@ class S {
   String get lightMode {
     return Intl.message('Light Mode', name: 'lightMode', desc: '', args: []);
   }
+
+  /// `It's now Adhan time`
+  String get adhanTimeNow {
+    return Intl.message(
+      'It\'s now Adhan time',
+      name: 'adhanTimeNow',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Adhan is playing now`
+  String get adhanIsPlaying {
+    return Intl.message(
+      'Adhan is playing now',
+      name: 'adhanIsPlaying',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

@@ -49,5 +49,7 @@
   "openSettings": "Open Settings",
   "settings": "Settings",
   "darkMode": "Dark Mode",
-  "lightMode": "Light Mode"
+  "lightMode": "Light Mode",
+  "adhanTimeNow": "It's now Adhan time",
+  "adhanIsPlaying": "Adhan is playing now"
 }
