@@ -6,6 +6,9 @@ class NotifyState {
   /// 2. null was explicitly provided → clear the value.
   static const _unset = Object();
 
+  /// 0- locationStatus
+  final LocationStatus locationStatus;
+
   /// 1- Salawat notification
   final bool salawatEnabled;
   final int salawatIntervalIndex;
@@ -43,6 +46,9 @@ class NotifyState {
   final bool ishaAdhanEnabled;
 
   const NotifyState({
+    /// 0
+    required this.locationStatus,
+
     /// 1
     required this.salawatEnabled,
     required this.salawatIntervalIndex,
@@ -82,6 +88,8 @@ class NotifyState {
 
   factory NotifyState.initial() {
     return const NotifyState(
+      // 0-
+      locationStatus: LocationStatus.idle,
       // 1
       salawatEnabled: true,
       salawatIntervalIndex: 0,
@@ -116,6 +124,9 @@ class NotifyState {
   }
 
   NotifyState copyWith({
+    // 0
+    LocationStatus? locationStatus,
+
     // 1
     bool? salawatEnabled,
     int? salawatIntervalIndex,
@@ -148,6 +159,9 @@ class NotifyState {
     bool? ishaAdhanEnabled,
   }) {
     return NotifyState(
+      // 0
+      locationStatus: locationStatus ?? this.locationStatus,
+
       // 1
       salawatEnabled: salawatEnabled ?? this.salawatEnabled,
       salawatIntervalIndex: salawatIntervalIndex ?? this.salawatIntervalIndex,
@@ -191,6 +205,9 @@ class NotifyState {
 
   Map<String, dynamic> toMap() {
     return {
+      // 0
+      'locationStatus': locationStatus.index,
+
       // 1
       'salawatEnabled': salawatEnabled,
       'salawatIntervalIndex': salawatIntervalIndex,
@@ -198,19 +215,19 @@ class NotifyState {
 
       // 2
       'azkarSabahEnabled': azkarSabahEnabled,
-      'azkarSabahTime': azkarSabahTime?.toIso8601String(),
+      'azkarSabahTime': azkarSabahTime?.toUtc().toIso8601String(),
 
       // 3
       'azkarAlmasaaEnabled': azkarAlmasaaEnabled,
-      'azkarAlmasaaTime': azkarAlmasaaTime?.toIso8601String(),
+      'azkarAlmasaaTime': azkarAlmasaaTime?.toUtc().toIso8601String(),
 
       // 4
       'azkarAlnawmEnabled': azkarAlnawmEnabled,
-      'azkarAlnawmTime': azkarAlnawmTime?.toIso8601String(),
+      'azkarAlnawmTime': azkarAlnawmTime?.toUtc().toIso8601String(),
 
       // 5
       'nightPrayerEnabled': nightPrayerEnabled,
-      'nightPrayerTime': nightPrayerTime?.toIso8601String(),
+      'nightPrayerTime': nightPrayerTime?.toUtc().toIso8601String(),
 
       // 6
       'prayerReminderEnable': prayerReminderEnable,
@@ -226,6 +243,11 @@ class NotifyState {
 
   factory NotifyState.fromMap(Map<String, dynamic> map) {
     return NotifyState(
+      // 0
+      locationStatus: map['locationStatus'] != null
+          ? LocationStatus.values[map['locationStatus']]
+          : LocationStatus.idle,
+
       // 1
       salawatEnabled: map['salawatEnabled'] ?? true,
       salawatIntervalIndex: map['salawatIntervalIndex'] ?? 0,
@@ -234,25 +256,25 @@ class NotifyState {
       // 2
       azkarSabahEnabled: map['azkarSabahEnabled'] ?? true,
       azkarSabahTime: map['azkarSabahTime'] != null
-          ? DateTime.parse(map['azkarSabahTime'])
+          ? DateTime.parse(map['azkarSabahTime']).toLocal()
           : null,
 
       // 3
       azkarAlmasaaEnabled: map['azkarAlmasaaEnabled'] ?? true,
       azkarAlmasaaTime: map['azkarAlmasaaTime'] != null
-          ? DateTime.parse(map['azkarAlmasaaTime'])
+          ? DateTime.parse(map['azkarAlmasaaTime']).toLocal()
           : null,
 
       // 4
       azkarAlnawmEnabled: map['azkarAlnawmEnabled'] ?? true,
       azkarAlnawmTime: map['azkarAlnawmTime'] != null
-          ? DateTime.parse(map['azkarAlnawmTime'])
+          ? DateTime.parse(map['azkarAlnawmTime']).toLocal()
           : null,
 
       // 5
       nightPrayerEnabled: map['nightPrayerEnabled'] ?? true,
       nightPrayerTime: map['nightPrayerTime'] != null
-          ? DateTime.parse(map['nightPrayerTime'])
+          ? DateTime.parse(map['nightPrayerTime']).toLocal()
           : null,
 
       // 6

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/utils/app_functions.dart';
 import '../../../generated/l10n.dart';
+import '../data/enum/location_status.dart';
 import '../logic/notify_cubit/notify_cubit.dart';
 
 class AdhkarCard extends StatelessWidget {
@@ -38,6 +39,7 @@ class AdhkarCard extends StatelessWidget {
                 title: S.of(context).azkarMorning,
                 time: _formatTime(context, state.azkarSabahTime),
                 enabled: state.azkarSabahEnabled,
+                locationStatus: state.locationStatus,
                 onChanged: (value) {
                   notifyCubit.toggleAzkarSabah(value);
                 },
@@ -51,6 +53,7 @@ class AdhkarCard extends StatelessWidget {
                 title: S.of(context).azkarEvening,
                 time: _formatTime(context, state.azkarAlmasaaTime),
                 enabled: state.azkarAlmasaaEnabled,
+                locationStatus: state.locationStatus,
                 onChanged: (value) {
                   notifyCubit.toggleAzkarAlmasaa(value);
                 },
@@ -64,6 +67,7 @@ class AdhkarCard extends StatelessWidget {
                 title: S.of(context).azkarSleeping,
                 time: _formatTime(context, state.azkarAlnawmTime),
                 enabled: state.azkarAlnawmEnabled,
+                locationStatus: state.locationStatus,
                 onChanged: (value) {
                   notifyCubit.toggleAzkarAlnawm(value);
                 },
@@ -77,6 +81,7 @@ class AdhkarCard extends StatelessWidget {
                 title: S.of(context).nightPrayer,
                 time: _formatTime(context, state.nightPrayerTime),
                 enabled: state.nightPrayerEnabled,
+                locationStatus: state.locationStatus,
                 onChanged: (value) {
                   notifyCubit.toggleNightPrayer(value);
                 },
@@ -95,10 +100,7 @@ class AdhkarCard extends StatelessWidget {
 
     final locale = Localizations.localeOf(context).languageCode;
 
-    return DateFormat(
-      'hh:mm a',
-      locale,
-    ).format(dateTime);
+    return DateFormat('hh:mm a', locale).format(dateTime);
   }
 }
 
@@ -108,15 +110,13 @@ Widget _timeSettingRow({
   required String title,
   required String time,
   required bool enabled,
+  required LocationStatus locationStatus,
   required ValueChanged<bool> onChanged,
 }) {
   final hasTime = time != '--:--';
 
   return Padding(
-    padding: const EdgeInsets.symmetric(
-      horizontal: 16,
-      vertical: 8,
-    ),
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
     child: Row(
       children: [
         Container(
@@ -125,11 +125,7 @@ Widget _timeSettingRow({
             color: iconColor.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(
-            icon,
-            color: iconColor,
-            size: 18,
-          ),
+          child: Icon(icon, color: iconColor, size: 18),
         ),
 
         const SizedBox(width: 12),
@@ -137,34 +133,21 @@ Widget _timeSettingRow({
         Expanded(
           child: Text(
             title,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
           ),
         ),
 
         if (enabled)
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 5,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             margin: const EdgeInsets.only(left: 8),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-            ),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
             child: Row(
               children: [
-                Icon(
-                  hasTime
-                      ? Icons.access_time_rounded
-                      : Icons.location_off_rounded,
-                  size: 14,
-                ),
+                _buildStatusIcon(hasTime, locationStatus),
                 const SizedBox(width: 4),
                 Text(
-                  hasTime ? time : '—',
+                  _buildStatusText(hasTime, time, locationStatus),
                   style: TextStyle(
                     fontSize: 12.5,
                     color: hasTime ? null : Colors.grey,
@@ -176,12 +159,61 @@ Widget _timeSettingRow({
 
         Transform.scale(
           scale: 0.85,
-          child: Switch(
-            value: enabled,
-            onChanged: onChanged,
-          ),
+          child: Switch(value: enabled, onChanged: onChanged),
         ),
       ],
     ),
   );
+}
+
+Widget _buildStatusIcon(bool hasTime, LocationStatus locationStatus) {
+  if (hasTime) {
+    return const Icon(Icons.access_time_rounded, size: 14);
+  }
+
+  // لسه بيحمّل → مؤشر تحميل صغير، مش أيقونة "location_off"
+  if (locationStatus == LocationStatus.loading) {
+    return const SizedBox(
+      width: 12,
+      height: 12,
+      child: CircularProgressIndicator(strokeWidth: 1.5),
+    );
+  }
+
+  // أي حالة فشل حقيقية (مش بس error) → أيقونة location_off
+  final isBlocked =
+      locationStatus == LocationStatus.error ||
+      locationStatus == LocationStatus.serviceDisabled ||
+      locationStatus == LocationStatus.permissionDenied ||
+      locationStatus == LocationStatus.permissionDeniedForever;
+
+  if (isBlocked) {
+    return const Icon(Icons.location_off_rounded, size: 14);
+  }
+
+  // success لكن لسه مفيش وقت (نادر، مثلاً أول تفعيل للسويتش) → تحميل خفيف
+  return const SizedBox(
+    width: 12,
+    height: 12,
+    child: CircularProgressIndicator(strokeWidth: 1.5),
+  );
+}
+
+String _buildStatusText(
+  bool hasTime,
+  String time,
+  LocationStatus locationStatus,
+) {
+  if (hasTime) return time;
+  if (locationStatus == LocationStatus.loading) return '...';
+
+  final isBlocked =
+      locationStatus == LocationStatus.error ||
+      locationStatus == LocationStatus.serviceDisabled ||
+      locationStatus == LocationStatus.permissionDenied ||
+      locationStatus == LocationStatus.permissionDeniedForever;
+
+  if (isBlocked) return '—';
+
+  return '...';
 }

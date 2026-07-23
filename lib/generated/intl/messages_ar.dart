@@ -55,6 +55,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "doNotDisturb": MessageLookupByLibrary.simpleMessage(
       "عدم الإزعاج من 11 م إلى 5 ص",
     ),
+    "enableLocationAction": MessageLookupByLibrary.simpleMessage(
+      "تفعيل خدمة الموقع",
+    ),
     "every": MessageLookupByLibrary.simpleMessage("كل"),
     "every15Minutes": MessageLookupByLibrary.simpleMessage("15 دقيقة"),
     "every1Hour": MessageLookupByLibrary.simpleMessage("ساعة"),
@@ -69,6 +72,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "fridayBoostDesc": MessageLookupByLibrary.simpleMessage(
       "سُنّة الإكثار من الصلاة على النبي ﷺ يوم الجمعة",
     ),
+    "grantPermission": MessageLookupByLibrary.simpleMessage("منح الإذن"),
     "haramAzan": MessageLookupByLibrary.simpleMessage("أذان الحرم المكي"),
     "hour": MessageLookupByLibrary.simpleMessage("ساعة"),
     "hours": MessageLookupByLibrary.simpleMessage("ساعات"),
@@ -78,16 +82,35 @@ class MessageLookup extends MessageLookupByLibrary {
     "lastThirdOfNight": MessageLookupByLibrary.simpleMessage(
       "الثلث الأخير من الليل",
     ),
+    "later": MessageLookupByLibrary.simpleMessage("لاحقًا"),
     "lightMode": MessageLookupByLibrary.simpleMessage("الوضع النهاري"),
+    "locationAccessRequiredContent": MessageLookupByLibrary.simpleMessage(
+      "محتاجين إذن الوصول للموقع عشان نحسب مواقيت الصلاة الصحيحة لمكانك ونجدول تذكيرات الأذكار والأدهان تلقائيًا.",
+    ),
     "locationDialogContent": MessageLookupByLibrary.simpleMessage(
       "يرجى تفعيل خدمات الموقع لحساب مواعيد الصلاة وجدولة التنبيهات بدقة.",
     ),
     "locationRequired": MessageLookupByLibrary.simpleMessage("الموقع مطلوب"),
+    "locationServiceOff": MessageLookupByLibrary.simpleMessage(
+      "خدمة الموقع مقفولة",
+    ),
+    "locationServiceOffContent": MessageLookupByLibrary.simpleMessage(
+      "فعّل خدمة الموقع على جهازك عشان نحسب مواقيت الصلاة الصحيحة لمكانك.",
+    ),
     "maghrib": MessageLookupByLibrary.simpleMessage("المغرب"),
     "minutes": MessageLookupByLibrary.simpleMessage("دقيقة"),
     "nightPrayer": MessageLookupByLibrary.simpleMessage("قيام الليل"),
     "notificationOff": MessageLookupByLibrary.simpleMessage("الإشعار متوقف"),
+    "openAppSettings": MessageLookupByLibrary.simpleMessage(
+      "فتح إعدادات التطبيق",
+    ),
     "openSettings": MessageLookupByLibrary.simpleMessage("فتح الإعدادات"),
+    "permissionDeniedForeverContent": MessageLookupByLibrary.simpleMessage(
+      "رفضت إذن الموقع بشكل دائم. افتح إعدادات التطبيق وفعّله يدويًا من هناك.",
+    ),
+    "permissionDeniedForeverTitle": MessageLookupByLibrary.simpleMessage(
+      "الإذن مرفوض بشكل دائم",
+    ),
     "pm": MessageLookupByLibrary.simpleMessage("م"),
     "prophetEnable": MessageLookupByLibrary.simpleMessage(
       "تفعيل تذكير الصلاة على النبي",

@@ -1,11 +1,15 @@
 import 'dart:developer';
 
+import 'package:geolocator/geolocator.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../data/enum/location_status.dart';
 import '../../data/enum/notification_type.dart';
 import '../../data/enum/prayer_type.dart';
+import '../../data/services/adhan_services/location_service.dart';
 import '../../data/services/notify_manager.dart';
+import '../../data/services/timezone_service.dart';
 
 part 'notify_state.dart';
 
@@ -278,62 +282,178 @@ class NotifyCubit extends HydratedCubit<NotifyState> {
   }
 
   Future<bool> refreshLocationBasedNotifications() async {
-    log('🔄 Refreshing location-based notifications...');
-
+    emit(state.copyWith(locationStatus: LocationStatus.loading));
     try {
       final prefs = await SharedPreferences.getInstance();
-
-      // حفظ حالة Prayer Reminder لاستخدامها في WorkManager
       await prefs.setBool(
         'prayer_reminder_enabled',
         state.prayerReminderEnable,
       );
-
-      // save prayer adhan states in shared preferences
       await prefs.setBool('fajr_adhan_enabled', state.fajrAdhanEnabled);
-
       await prefs.setBool('dhuhr_adhan_enabled', state.dhuhrAdhanEnabled);
-
       await prefs.setBool('asr_adhan_enabled', state.asrAdhanEnabled);
-
       await prefs.setBool('maghrib_adhan_enabled', state.maghribAdhanEnabled);
-
       await prefs.setBool('isha_adhan_enabled', state.ishaAdhanEnabled);
 
-      // 1- azkarSabah
-      if (state.azkarSabahEnabled) {
-        await _updateAzkarSabahNotification(true);
-      }
+      // شغّل التحديثات المستقلة عن بعض بالتوازي بدل التتابع
+      await Future.wait([
+        if (state.azkarSabahEnabled) _updateAzkarSabahNotification(true),
+        if (state.azkarAlmasaaEnabled) _updateAzkarAlmasaaNotification(true),
+        if (state.azkarAlnawmEnabled) _updateAzkarAlnawmNotification(true),
+        if (state.nightPrayerEnabled) _updateNightPrayerNotification(true),
+        if (state.prayerReminderEnable) _updatePrayerReminderNotification(true),
+      ]);
 
-      // 2- azkarAlmasaa
-      if (state.azkarAlmasaaEnabled) {
-        await _updateAzkarAlmasaaNotification(true);
-      }
-
-      // 3- azkarAlnawm
-      if (state.azkarAlnawmEnabled) {
-        await _updateAzkarAlnawmNotification(true);
-      }
-
-      // 4- Night Prayer
-      if (state.nightPrayerEnabled) {
-        await _updateNightPrayerNotification(true);
-      }
-
-      // 5- Prayer Reminder
-      if (state.prayerReminderEnable) {
-        await _updatePrayerReminderNotification(true);
-      }
-
-      // 6- Prayer Adhan
       await _updatePrayerAdhanNotification();
 
+      emit(state.copyWith(locationStatus: LocationStatus.success));
       return true;
     } catch (e, s) {
       log('❌ Location notifications error: $e');
       log('$s');
-
+      emit(state.copyWith(locationStatus: LocationStatus.error));
       return false;
+    }
+  }
+
+  Future<void> initializeLocationBasedNotifications() async {
+    if (state.locationStatus == LocationStatus.loading) return;
+
+    emit(state.copyWith(locationStatus: LocationStatus.loading));
+
+    try {
+      final isNewDay = await _isNewDay();
+      final refreshCheck = await _shouldRefresh();
+
+      if (!isNewDay && !refreshCheck.shouldRefresh) {
+        emit(state.copyWith(locationStatus: LocationStatus.success));
+        return;
+      }
+
+      final isLocationEnabled = await LocationService.isLocationEnabled();
+      final hasSavedLocation = await LocationService.hasSavedLocation();
+
+      if (!isLocationEnabled) {
+        emit(state.copyWith(locationStatus: LocationStatus.serviceDisabled));
+        return;
+      }
+
+      final permission = await LocationService.checkPermission();
+
+      if (permission == LocationPermission.deniedForever) {
+        emit(
+          state.copyWith(
+            locationStatus: LocationStatus.permissionDeniedForever,
+          ),
+        );
+        return;
+      }
+
+      if (permission == LocationPermission.denied) {
+        final requested = await LocationService.requestPermission();
+
+        if (requested == LocationPermission.denied) {
+          emit(state.copyWith(locationStatus: LocationStatus.permissionDenied));
+          return;
+        }
+
+        if (requested == LocationPermission.deniedForever) {
+          emit(
+            state.copyWith(
+              locationStatus: LocationStatus.permissionDeniedForever,
+            ),
+          );
+          return;
+        }
+      }
+
+      try {
+        final position =
+            refreshCheck.cachedPosition ??
+            await LocationService.getCurrentPosition();
+
+        await LocationService.saveLastLocation(position);
+        await refreshLocationBasedNotifications();
+        await _saveRefreshMarker(position);
+        return;
+      } catch (e) {
+        log('⚠️ Failed to get current location: $e');
+      }
+
+      if (hasSavedLocation) {
+        await refreshLocationBasedNotifications();
+        await _saveRefreshMarker(null);
+        return;
+      }
+
+      emit(state.copyWith(locationStatus: LocationStatus.error));
+    } catch (e, s) {
+      log('❌ initializeLocationBasedNotifications error: $e');
+      log('$s');
+      emit(state.copyWith(locationStatus: LocationStatus.error));
+    }
+  }
+
+  Future<bool> _isNewDay() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastRefreshDay = prefs.getString('last_refresh_day');
+    final today = TimezoneService.currentTime()
+        .toIso8601String()
+        .split('T')
+        .first;
+    return lastRefreshDay != today;
+  }
+
+  Future<_RefreshCheckResult> _shouldRefresh() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final lastRefreshMillis = prefs.getInt('last_refresh_timestamp');
+    if (lastRefreshMillis == null) {
+      return const _RefreshCheckResult(true, null);
+    }
+
+    final lastRefreshTime = DateTime.fromMillisecondsSinceEpoch(
+      lastRefreshMillis,
+    );
+    final now = TimezoneService.currentTime();
+    if (now.difference(lastRefreshTime) >= const Duration(hours: 3)) {
+      return const _RefreshCheckResult(true, null);
+    }
+
+    final lastLat = prefs.getDouble('last_refresh_lat');
+    final lastLng = prefs.getDouble('last_refresh_lng');
+
+    if (lastLat != null && lastLng != null) {
+      try {
+        final currentPosition = await LocationService.getCurrentPosition();
+        final distance = Geolocator.distanceBetween(
+          lastLat,
+          lastLng,
+          currentPosition.latitude,
+          currentPosition.longitude,
+        );
+        if (distance >= 1000) {
+          return _RefreshCheckResult(true, currentPosition);
+        }
+      } catch (_) {}
+    }
+
+    return const _RefreshCheckResult(false, null);
+  }
+
+  Future<void> _saveRefreshMarker(Position? position) async {
+    final prefs = await SharedPreferences.getInstance();
+    final now = TimezoneService.currentTime();
+
+    await prefs.setInt('last_refresh_timestamp', now.millisecondsSinceEpoch);
+    await prefs.setString(
+      'last_refresh_day',
+      now.toIso8601String().split('T').first,
+    );
+
+    if (position != null) {
+      await prefs.setDouble('last_refresh_lat', position.latitude);
+      await prefs.setDouble('last_refresh_lng', position.longitude);
     }
   }
 
@@ -347,4 +467,10 @@ class NotifyCubit extends HydratedCubit<NotifyState> {
   Map<String, dynamic>? toJson(NotifyState state) {
     return state.toMap();
   }
+}
+
+class _RefreshCheckResult {
+  final bool shouldRefresh;
+  final Position? cachedPosition;
+  const _RefreshCheckResult(this.shouldRefresh, this.cachedPosition);
 }

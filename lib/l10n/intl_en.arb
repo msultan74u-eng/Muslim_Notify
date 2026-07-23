@@ -51,5 +51,14 @@
   "darkMode": "Dark Mode",
   "lightMode": "Light Mode",
   "adhanTimeNow": "It's now Adhan time",
-  "adhanIsPlaying": "Adhan is playing now"
+  "adhanIsPlaying": "Adhan is playing now",
+  "later": "Later",
+  "locationServiceOff": "Location service is off",
+  "locationServiceOffContent": "Enable location service on your device so we can calculate the correct prayer times for your location.",
+  "enableLocationAction": "Enable location service",
+  "permissionDeniedForeverTitle": "Permission permanently denied",
+  "permissionDeniedForeverContent": "You permanently denied location permission. Open app settings and enable it manually from there.",
+  "openAppSettings": "Open app settings",
+  "locationAccessRequiredContent": "We need location access to calculate the correct prayer times for your location and schedule dhikr and adhan reminders automatically.",
+  "grantPermission": "Grant permission"
 }

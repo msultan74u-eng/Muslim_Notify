@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:muslim_notify/features/notification/widgets/switch_row.dart';
 
-import '../../../core/themes/app_colors.dart';
 import '../../../core/utils/app_functions.dart';
-import '../../../generated/l10n.dart';
 import '../data/enum/prayer_type.dart';
 import '../data/models/prayer_times_model.dart';
-import '../logic/notify_cubit/notify_cubit.dart';
 import '../logic/prayer_times_cubit/prayer_times_cubit.dart';
 import '../logic/prayer_times_cubit/prayer_times_state.dart';
 import 'adhan/card_shell.dart';

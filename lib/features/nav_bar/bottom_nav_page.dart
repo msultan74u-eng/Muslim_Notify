@@ -1,9 +1,11 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/navigation/app_navigator.dart';
 import '../home/views/home_page.dart';
+import '../notification/data/enum/location_status.dart';
+import '../notification/logic/notify_cubit/notify_cubit.dart';
+import '../notification/widgets/location_service_dialog.dart';
 import 'floating_nav_bar.dart';
 import '../notification/data/services/local_notification_services.dart';
 import '../notification/logic/prayer_times_cubit/prayer_times_cubit.dart';
@@ -18,8 +20,32 @@ class BottomNavPage extends StatefulWidget {
   State<BottomNavPage> createState() => _BottomNavPageState();
 }
 
-class _BottomNavPageState extends State<BottomNavPage> {
+class _BottomNavPageState extends State<BottomNavPage>
+    with WidgetsBindingObserver {
   int _currentIndex = 0;
+  bool _locationDialogShown = false;
+
+  /// Initial state
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    listenToNotificationStream();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      context.read<NotifyCubit>().initializeLocationBasedNotifications();
+    }
+  }
 
   final List<Widget> _screens = [
     const NotificationPage(),
@@ -50,14 +76,6 @@ class _BottomNavPageState extends State<BottomNavPage> {
       label: 'Learn',
     ),
   ];
-
-  /// Initial state
-  @override
-  void initState() {
-    super.initState();
-
-    listenToNotificationStream();
-  }
 
   /// Send context to WorkManager → Notification
 
@@ -94,53 +112,77 @@ class _BottomNavPageState extends State<BottomNavPage> {
         ),
         BlocProvider<NavBarCubit>(create: (_) => NavBarCubit()),
       ],
-
-      child: Scaffold(
-        extendBody: true,
-
-        body: Builder(
-          builder: (context) => GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onDoubleTap: () {
-              context.read<NavBarCubit>().toggle();
-            },
-            onVerticalDragEnd: (details) {
-              final velocity = details.primaryVelocity ?? 0;
-              if (velocity > 200) {
-                context.read<NavBarCubit>().hide();
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<NotifyCubit, NotifyState>(
+            listenWhen: (prev, curr) =>
+                prev.locationStatus != curr.locationStatus,
+            listener: (context, state) {
+              final status = state.locationStatus;
+              if (status == LocationStatus.success) {
+                context.read<PrayerTimesCubit>().getTodayPrayerTimes();
               }
-              if (velocity < -200) {
-                context.read<NavBarCubit>().show();
+
+              final needsAttention =
+                  status == LocationStatus.serviceDisabled ||
+                  status == LocationStatus.permissionDenied ||
+                  status == LocationStatus.permissionDeniedForever;
+
+              if (needsAttention && !_locationDialogShown) {
+                _locationDialogShown = true;
+                LocationServiceDialog.show(context, status);
               }
             },
-            child: IndexedStack(index: _currentIndex, children: _screens),
           ),
-        ),
+        ],
 
-        bottomNavigationBar: BlocBuilder<NavBarCubit, bool>(
-          builder: (context, isVisible) {
-            return IgnorePointer(
-              ignoring: !isVisible,
-              child: AnimatedSlide(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeOut,
-                offset: isVisible ? const Offset(0, 0) : const Offset(0, 1.2),
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 200),
-                  opacity: isVisible ? 1 : 0,
-                  child: FloatingNavBar(
-                    currentIndex: _currentIndex,
-                    items: _navItems,
-                    onTap: (index) {
-                      setState(() {
-                        _currentIndex = index;
-                      });
-                    },
+        child: Scaffold(
+          extendBody: true,
+
+          body: Builder(
+            builder: (context) => GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onDoubleTap: () {
+                context.read<NavBarCubit>().toggle();
+              },
+              onVerticalDragEnd: (details) {
+                final velocity = details.primaryVelocity ?? 0;
+                if (velocity > 200) {
+                  context.read<NavBarCubit>().hide();
+                }
+                if (velocity < -200) {
+                  context.read<NavBarCubit>().show();
+                }
+              },
+              child: IndexedStack(index: _currentIndex, children: _screens),
+            ),
+          ),
+
+          bottomNavigationBar: BlocBuilder<NavBarCubit, bool>(
+            builder: (context, isVisible) {
+              return IgnorePointer(
+                ignoring: !isVisible,
+                child: AnimatedSlide(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOut,
+                  offset: isVisible ? const Offset(0, 0) : const Offset(0, 1.2),
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 200),
+                    opacity: isVisible ? 1 : 0,
+                    child: FloatingNavBar(
+                      currentIndex: _currentIndex,
+                      items: _navItems,
+                      onTap: (index) {
+                        setState(() {
+                          _currentIndex = index;
+                        });
+                      },
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

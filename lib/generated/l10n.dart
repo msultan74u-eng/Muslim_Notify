@@ -458,6 +458,91 @@ class S {
       args: [],
     );
   }
+
+  /// `Later`
+  String get later {
+    return Intl.message('Later', name: 'later', desc: '', args: []);
+  }
+
+  /// `Location service is off`
+  String get locationServiceOff {
+    return Intl.message(
+      'Location service is off',
+      name: 'locationServiceOff',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enable location service on your device so we can calculate the correct prayer times for your location.`
+  String get locationServiceOffContent {
+    return Intl.message(
+      'Enable location service on your device so we can calculate the correct prayer times for your location.',
+      name: 'locationServiceOffContent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enable location service`
+  String get enableLocationAction {
+    return Intl.message(
+      'Enable location service',
+      name: 'enableLocationAction',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Permission permanently denied`
+  String get permissionDeniedForeverTitle {
+    return Intl.message(
+      'Permission permanently denied',
+      name: 'permissionDeniedForeverTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You permanently denied location permission. Open app settings and enable it manually from there.`
+  String get permissionDeniedForeverContent {
+    return Intl.message(
+      'You permanently denied location permission. Open app settings and enable it manually from there.',
+      name: 'permissionDeniedForeverContent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open app settings`
+  String get openAppSettings {
+    return Intl.message(
+      'Open app settings',
+      name: 'openAppSettings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `We need location access to calculate the correct prayer times for your location and schedule dhikr and adhan reminders automatically.`
+  String get locationAccessRequiredContent {
+    return Intl.message(
+      'We need location access to calculate the correct prayer times for your location and schedule dhikr and adhan reminders automatically.',
+      name: 'locationAccessRequiredContent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Grant permission`
+  String get grantPermission {
+    return Intl.message(
+      'Grant permission',
+      name: 'grantPermission',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

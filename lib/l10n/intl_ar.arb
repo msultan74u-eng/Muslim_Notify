@@ -54,5 +54,14 @@
   "darkMode": "الوضع الليلي",
   "lightMode": "الوضع النهاري",
   "adhanTimeNow": "حان الآن وقت الأذان",
-  "adhanIsPlaying": "الأذان قيد التشغيل الآن"
+  "adhanIsPlaying": "الأذان قيد التشغيل الآن",
+  "later": "لاحقًا",
+  "locationServiceOff": "خدمة الموقع مقفولة",
+  "locationServiceOffContent": "فعّل خدمة الموقع على جهازك عشان نحسب مواقيت الصلاة الصحيحة لمكانك.",
+  "enableLocationAction": "تفعيل خدمة الموقع",
+  "permissionDeniedForeverTitle": "الإذن مرفوض بشكل دائم",
+  "permissionDeniedForeverContent": "رفضت إذن الموقع بشكل دائم. افتح إعدادات التطبيق وفعّله يدويًا من هناك.",
+  "openAppSettings": "فتح إعدادات التطبيق",
+  "locationAccessRequiredContent": "محتاجين إذن الوصول للموقع عشان نحسب مواقيت الصلاة الصحيحة لمكانك ونجدول تذكيرات الأذكار والأدهان تلقائيًا.",
+  "grantPermission": "منح الإذن"
 }

@@ -61,6 +61,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "doNotDisturb": MessageLookupByLibrary.simpleMessage(
       "Do not disturb from 11 PM to 5 AM",
     ),
+    "enableLocationAction": MessageLookupByLibrary.simpleMessage(
+      "Enable location service",
+    ),
     "every": MessageLookupByLibrary.simpleMessage("Every"),
     "every15Minutes": MessageLookupByLibrary.simpleMessage("15 mins"),
     "every1Hour": MessageLookupByLibrary.simpleMessage("1 hour"),
@@ -75,6 +78,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "fridayBoostDesc": MessageLookupByLibrary.simpleMessage(
       "It is Sunnah to send many blessings upon the Prophet ﷺ on Friday",
     ),
+    "grantPermission": MessageLookupByLibrary.simpleMessage("Grant permission"),
     "haramAzan": MessageLookupByLibrary.simpleMessage("Makkah Adhan"),
     "hour": MessageLookupByLibrary.simpleMessage("Hour"),
     "hours": MessageLookupByLibrary.simpleMessage("Hours"),
@@ -84,18 +88,37 @@ class MessageLookup extends MessageLookupByLibrary {
     "lastThirdOfNight": MessageLookupByLibrary.simpleMessage(
       "Last third of night",
     ),
+    "later": MessageLookupByLibrary.simpleMessage("Later"),
     "lightMode": MessageLookupByLibrary.simpleMessage("Light Mode"),
+    "locationAccessRequiredContent": MessageLookupByLibrary.simpleMessage(
+      "We need location access to calculate the correct prayer times for your location and schedule dhikr and adhan reminders automatically.",
+    ),
     "locationDialogContent": MessageLookupByLibrary.simpleMessage(
       "Please enable location services to calculate prayer times and schedule notifications accurately.",
     ),
     "locationRequired": MessageLookupByLibrary.simpleMessage(
       "Location Required",
     ),
+    "locationServiceOff": MessageLookupByLibrary.simpleMessage(
+      "Location service is off",
+    ),
+    "locationServiceOffContent": MessageLookupByLibrary.simpleMessage(
+      "Enable location service on your device so we can calculate the correct prayer times for your location.",
+    ),
     "maghrib": MessageLookupByLibrary.simpleMessage("Maghrib"),
     "minutes": MessageLookupByLibrary.simpleMessage("Minutes"),
     "nightPrayer": MessageLookupByLibrary.simpleMessage("Night Prayer"),
     "notificationOff": MessageLookupByLibrary.simpleMessage("Notification off"),
+    "openAppSettings": MessageLookupByLibrary.simpleMessage(
+      "Open app settings",
+    ),
     "openSettings": MessageLookupByLibrary.simpleMessage("Open Settings"),
+    "permissionDeniedForeverContent": MessageLookupByLibrary.simpleMessage(
+      "You permanently denied location permission. Open app settings and enable it manually from there.",
+    ),
+    "permissionDeniedForeverTitle": MessageLookupByLibrary.simpleMessage(
+      "Permission permanently denied",
+    ),
     "pm": MessageLookupByLibrary.simpleMessage("PM"),
     "prophetEnable": MessageLookupByLibrary.simpleMessage(
       "Enable Prayers upon the Prophet",
